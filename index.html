@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kaw Ixqa'al IV · Tablero de gestión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="light"]{
+  --bg:#F2F6F5; --surface:#FFFFFF; --surface2:#E9F1F0; --line:#DAE5E3; --ink:#123634; --muted:#4F6D6A; --faint:#8EA7A4;
+  --accent:#0E8A80; --accent-ink:#FFFFFF; --accent-soft:#D7F4F0; --mint:#80FFF3;
+  --ok:#23885F; --warn:#B98100; --bad:#D9501A; --info:#0E8A80; --na:#7C9592;
+  --ok-bg:#DDF2E8; --warn-bg:#FBEFC9; --bad-bg:#FBE0D3; --info-bg:#D7F4F0; --na-bg:#E6EEEC;
+  --oe1:#14A89D; --oe2:#7B6CF6; --oe3:#E0A21B; --oeA:#8AA3A0;
+  --shadow:0 1px 2px rgba(18,54,52,.06),0 6px 20px rgba(18,54,52,.05);
+  --head:'Barlow Condensed','Arial Narrow',system-ui,sans-serif;
+  --body:'Barlow',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color-scheme:light;
+}
+[data-theme="dark"]{
+  --bg:#052E2C; --surface:#0B403C; --surface2:#0F4C47; --line:#1C5A55; --ink:#F1FAF9; --muted:#9CC7C2; --faint:#6AA19B;
+  --accent:#4AD9CC; --accent-ink:#052E2C; --accent-soft:#12504A; --mint:#80FFF3;
+  --ok:#69D6A5; --warn:#F2C45A; --bad:#FF8352; --info:#4AD9CC; --na:#8DB4AF;
+  --ok-bg:#14503C; --warn-bg:#51420F; --bad-bg:#5A2A17; --info-bg:#12504A; --na-bg:#17504B;
+  --oe1:#4AD9CC; --oe2:#A79CFF; --oe3:#F2C45A; --oeA:#8DB4AF;
+  --shadow:none; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--head);font-weight:700;margin:0;line-height:1.1}
+h1{font-size:clamp(32px,5vw,48px)} h2{font-size:25px} h3{font-size:20px}
+p{margin:0}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding:22px 16px 60px}
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:12px 24px;margin-bottom:14px}
+.sub{color:var(--muted);margin-top:4px}
+.themebtn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;font-size:13.5px;font-weight:600;color:var(--muted);box-shadow:var(--shadow)}
+
+/* controles fijos */
+.ctrl{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);padding:10px 0 10px;margin:0 -16px 8px;padding-left:16px;padding-right:16px;border-bottom:1px solid var(--line)}
+.ctrl-row{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center}
+.cut{display:flex;align-items:center;gap:12px;flex:1 1 440px;min-width:0}
+.cut label{font-size:13.5px;color:var(--muted);font-weight:600;white-space:nowrap}
+.cut input[type=range]{flex:1;min-width:120px;accent-color:var(--accent);height:28px}
+.cut output{font-family:var(--head);font-size:22px;font-weight:700;min-width:130px;color:var(--accent)}
+.pill{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 14px;font-size:13.5px;font-weight:600;color:var(--muted);white-space:nowrap}
+.pill:hover{border-color:var(--accent);color:var(--ink)}
+.pill.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chips .lab{font-size:13.5px;color:var(--muted);font-weight:600;margin-right:2px}
+.tabs{display:flex;gap:2px;margin:6px 0 18px;overflow-x:auto}
+.tab{flex:none;background:none;border:0;border-bottom:3px solid transparent;padding:9px 16px 7px;font-family:var(--head);font-size:21px;font-weight:700;color:var(--muted)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
+.card+.card,.card+.row,.row+.card,.kpis+.card,.card+.kpis,.row+.row{margin-top:16px}
+.row{display:grid;gap:16px}
+.row.two{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}
+.row.explore{grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr)}
+@media (max-width:920px){.row.two,.row.explore{grid-template-columns:1fr}}
+.cap{color:var(--muted);font-size:14px;margin-top:5px;max-width:72ch}
+
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:2px 10px;border-radius:999px;white-space:nowrap}
+.chip::before{content:'';width:8px;height:8px;background:currentColor;border-radius:50%}
+.chip.warn::before{border-radius:0;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.chip.bad::before{border-radius:1px;transform:rotate(45deg)}
+.chip.ok{color:var(--ok);background:var(--ok-bg)}.chip.warn{color:var(--warn);background:var(--warn-bg)}.chip.bad{color:var(--bad);background:var(--bad-bg)}
+.chip.info{color:var(--info);background:var(--info-bg)}.chip.na{color:var(--na);background:var(--na-bg)}
+
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:16px 0 0}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow)}
+.kpi span{font-size:13px;color:var(--muted)}
+.kpi b{display:block;font-family:var(--head);font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi small{font-size:12.5px;color:var(--muted)}
+@media (max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}}
+
+svg{display:block;max-width:100%;height:auto}
+svg text{font-family:var(--body)}
+.tri-wrap{max-width:430px;margin:4px auto 0}
+.tri-grid{fill:none;stroke:var(--line);stroke-width:1}
+.tri-axis{stroke:var(--line);stroke-width:1}
+.tri-ideal{fill:none;stroke:var(--faint);stroke-width:1.8;stroke-dasharray:6 5}
+.tri-real{fill:var(--accent);fill-opacity:.16;stroke:var(--accent);stroke-width:3;stroke-linejoin:round}
+.dot{stroke:var(--surface);stroke-width:2.5}
+.dot.ok{fill:var(--ok)}.dot.warn{fill:var(--warn)}.dot.bad{fill:var(--bad)}.dot.info{fill:var(--info)}.dot.na{fill:var(--na)}
+.tl-n{fill:var(--muted);font-size:13px;font-weight:600}
+.tl-v{font-size:30px;font-weight:700;font-family:var(--head)}
+.tl-s{font-size:12.5px;font-weight:600;fill:var(--muted)}
+.tl-v.ok{fill:var(--ok)}.tl-v.warn{fill:var(--warn)}.tl-v.bad{fill:var(--bad)}.tl-v.info{fill:var(--info)}.tl-v.na{fill:var(--na)}
+.ring-t{fill:var(--faint);font-size:11px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted);margin:10px 0 0}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.sw{display:inline-block;width:22px;height:0;border-top:3px solid}
+.sw.plan{border-color:var(--faint);border-top-style:dashed}.sw.real{border-color:var(--accent)}.sw.proy{border-color:var(--accent);border-top-style:dotted}
+.sw.dotc{width:11px;height:11px;border:0;border-radius:50%}
+.ax{stroke:var(--line);stroke-width:1}
+.axt{fill:var(--muted);font-size:11.5px}.axt.cut{fill:var(--accent);font-weight:700}
+.axl{fill:var(--ink);font-size:12.5px;font-weight:600}
+.l-plan{fill:none;stroke:var(--faint);stroke-width:2.2;stroke-dasharray:6 5}
+.l-real{fill:none;stroke:var(--accent);stroke-width:3.2}
+.l-proy{fill:none;stroke:var(--accent);stroke-width:3;stroke-dasharray:1.5 5;stroke-linecap:round}
+.cutline{stroke:var(--ink);stroke-opacity:.35;stroke-width:1.3;stroke-dasharray:3 4}
+.diag{stroke:var(--faint);stroke-width:1.6;stroke-dasharray:5 5;fill:none}
+.refl{stroke:var(--faint);stroke-width:1.3;stroke-dasharray:2 4}
+.hit{fill:transparent}
+.bub{cursor:pointer;stroke:var(--surface);stroke-width:2;fill-opacity:.82;transform-box:fill-box}
+.bub:hover,.bub:focus{fill-opacity:1;stroke:var(--ink)}
+.bub.sel{stroke:var(--ink);stroke-width:3;fill-opacity:1}
+.bub.c-ok{fill:var(--ok)}.bub.c-warn{fill:var(--warn)}.bub.c-bad{fill:var(--bad)}.bub.c-info{fill:var(--info)}.bub.c-na{fill:var(--na)}
+.bub.o-1{fill:var(--oe1)}.bub.o-2{fill:var(--oe2)}.bub.o-3{fill:var(--oe3)}.bub.o-A{fill:var(--oeA)}.bub.o-0{fill:var(--accent)}
+.blab{fill:var(--ink);font-size:11.5px;font-weight:700;pointer-events:none;paint-order:stroke;stroke:var(--surface);stroke-width:3px}
+.hint{fill:var(--faint);font-size:12px;font-style:italic}
+
+.tools{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-bottom:12px}
+.tools label{font-size:13px;color:var(--muted);display:inline-flex;flex-direction:column;gap:2px;font-weight:600}
+select{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:6px 8px;font-size:14px;max-width:100%}
+.presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.how{background:var(--accent-soft);border-radius:12px;padding:10px 14px;font-size:14px;margin-top:12px}
+.how b{font-weight:700}
+
+.st{display:flex;flex-direction:column;min-width:78px}
+.st span{font-size:12px;color:var(--muted)}
+.st b{font-family:var(--head);font-size:21px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 14px;margin:12px 0}
+.mini{margin-top:12px}
+.mini h4{font-size:16px;color:var(--muted);margin-bottom:6px}
+.mi{display:grid;grid-template-columns:minmax(0,1fr) 90px;gap:4px 10px;align-items:center;padding:5px 0;border-top:1px solid var(--line);font-size:13px}
+.mi:first-of-type{border-top:0}
+.mi span{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.bar{position:relative;height:9px;background:var(--surface2);border-radius:999px;min-width:60px}
+.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:var(--sc)}
+.bar b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.55}
+.bar.ok{--sc:var(--ok)}.bar.warn{--sc:var(--warn)}.bar.bad{--sc:var(--bad)}.bar.info{--sc:var(--info)}.bar.na{--sc:var(--na)}.bar.acc{--sc:var(--accent)}
+.rank{display:grid;gap:4px}
+.rk{display:grid;grid-template-columns:minmax(120px,300px) minmax(0,1fr) 84px;gap:10px;align-items:center;padding:5px 8px;border-radius:10px;cursor:pointer;font-size:13.5px}
+.rk:hover,.rk.sel{background:var(--accent-soft)}
+.rk .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rk .tr{position:relative;height:12px}
+.rk .tr i{position:absolute;top:0;bottom:0;border-radius:4px;background:var(--accent)}
+.rk .tr i.neg{background:var(--bad)}
+.rk .tr u{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--faint)}
+.rk b{text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:640px){.rk{grid-template-columns:90px minmax(0,1fr) 70px}}
+
+.budrow{display:grid;grid-template-columns:minmax(150px,260px) minmax(0,1fr) 190px;gap:6px 14px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.budrow:first-of-type{border-top:0}
+.budrow .trk{position:relative;height:18px;background:var(--surface2);border-radius:6px}
+.budrow .fill{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:var(--accent)}
+.budrow .plan{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+.budrow .val{text-align:right;font-variant-numeric:tabular-nums}
+.budrow .val small{display:block;color:var(--muted);font-size:12px}
+@media (max-width:720px){.budrow{grid-template-columns:1fr}.budrow .val{text-align:left}}
+
+.attn{list-style:none;margin:8px 0 0;padding:0}
+.attn li{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.attn li:first-child{border-top:0}
+.attn .t{font-weight:600}.attn .r{font-size:13.5px;color:var(--muted)}
+
+.scroller{overflow-x:auto}
+.tbl{border-collapse:collapse;width:100%;font-size:13.5px}
+.tbl th,.tbl td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;vertical-align:middle}
+.tbl th{font-weight:600;color:var(--muted);font-size:12.5px;vertical-align:bottom}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl td.t,.tbl th.t{text-align:left;white-space:normal;min-width:230px}
+.tbl td.n{font-variant-numeric:tabular-nums}
+.tbl tr.grp td{background:var(--surface2);font-weight:700}
+.tbl tfoot td{font-weight:700;border-top:2px solid var(--line);background:var(--surface2)}
+.tbl .sticky{position:sticky;left:0;z-index:1;background:var(--surface)}
+.tbl tr.grp .sticky,.tbl tfoot .sticky{background:var(--surface2)}
+.tbl td.sticky.t,.tbl th.sticky.t{min-width:280px;max-width:280px}
+.tbl .post{opacity:.45}
+.tbl th small{display:block;font-weight:400;font-size:11px;color:var(--faint)}
+.tbl th.cutc{box-shadow:inset 0 -3px 0 var(--accent);color:var(--accent)}
+.neg{color:var(--bad);font-weight:700}.pos{color:var(--ok);font-weight:700}
+.tag{display:inline-block;font-size:12px;font-weight:700;background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:1px 7px;margin-right:8px}
+.heat td.n{padding:5px 4px;min-width:50px;text-align:center}
+
+.oe{margin-top:26px}.oe:first-child{margin-top:0}
+.oe-h{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 20px;align-items:flex-end;margin-bottom:12px}
+.oe-h p{color:var(--muted);font-size:14px;max-width:75ch;margin-top:4px}
+.oe-n{display:flex;gap:22px;flex-wrap:wrap}
+details.res{background:var(--surface);border:1px solid var(--line);border-radius:16px;margin-top:10px;box-shadow:var(--shadow)}
+details.res>summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;flex-wrap:wrap;gap:10px 24px;justify-content:space-between;align-items:center}
+details.res>summary::-webkit-details-marker{display:none}
+details.res>summary .r-name{flex:1 1 320px;font-weight:600;font-size:15px;line-height:1.35}
+details.res>summary .r-name::before{content:'';display:inline-block;width:8px;height:8px;border-right:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(-45deg);margin-right:12px;transition:transform .15s}
+details.res[open]>summary .r-name::before{transform:rotate(45deg)}
+.res-b{padding:2px 16px 18px}
+.res-b h4{font-size:18px;margin:16px 0 8px;color:var(--accent)}
+.foot{margin-top:28px;color:var(--muted);font-size:13.5px}
+.foot details{margin-top:8px}.foot summary{cursor:pointer;font-weight:600;color:var(--ink)}
+.foot ul{margin:8px 0 0;padding-left:20px;max-width:90ch}.foot li{margin-top:4px}
+.tip{position:fixed;z-index:60;pointer-events:none;background:var(--ink);color:var(--bg);font-size:13px;padding:8px 11px;border-radius:10px;max-width:290px;line-height:1.4;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.tip b{font-weight:700}.tip i{font-style:normal;opacity:.75}
+.empty{padding:26px;text-align:center;color:var(--muted)}
+@media (max-width:700px){.ctrl{position:static;margin:0 -12px 8px;padding-left:12px;padding-right:12px}.cut{flex-basis:100%;flex-wrap:wrap}.cut input[type=range]{flex:1 1 100%;order:3}.cut output{min-width:0;font-size:20px}.kpi{min-width:0;padding:12px}.kpi b{font-size:22px}.wrap{padding-left:12px;padding-right:12px}}
+
+.lock{margin-top:8px;font-size:13.5px;background:var(--warn-bg);color:var(--ink);border-radius:10px;padding:7px 12px}
+.lock[hidden]{display:none}
+.thb{background:none;border:0;padding:0;font:inherit;font-weight:600;color:inherit;cursor:pointer;text-align:inherit}
+.thb:hover{color:var(--ink)}
+.tbl th[data-act="sort"]{cursor:pointer}
+.tbl tr.clk{cursor:pointer}.tbl tr.clk:hover td{background:var(--accent-soft)}.tbl tr.clk.sel td{background:var(--accent-soft);font-weight:600}
+.zl{font-size:12.5px;font-weight:700}
+.defs{margin:10px 0 0;padding-left:20px;font-size:14px;color:var(--muted)}.defs li{margin-top:6px}.defs b{color:var(--ink)}
+details.cust{margin:12px 0 4px}
+details.cust>summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--accent)}
+.tbl th.t{min-width:200px}
+.tbl td .chip{white-space:normal;text-align:left}
+.tbl tr.clk td:last-child{min-width:150px}
+@media (prefers-reduced-motion:no-preference){.pill,.tab{transition:background-color .15s,color .15s}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script id="data" type="application/json">{"lines": [{"id": "L003", "name": "Viáticos y viajes locales", "y": [10221.0, 10903.0, 11339.0], "m": [0.0, 132.16, 523.88, 669.64, 917.4, 620.0, 877.1, 568.84, 860.94, 842.52, 1115.94, 754.42, 1020.24, 449.83, 249.22, 739.49, 159.68, 1939.57, 1188.71, 1138.19, 1152.37, 1473.91, 1100.0, 1100.0, 1100.0, 1100.0, 1100.0, 1100.0, 1100.0, 1100.0, 1100.0, 1100.0, 1100.0, 1100.0, 1100.0, 1100.0], "res": null}, {"id": "L004", "name": "Operación: oficinas, vehículos y equipo", "y": [32583.0, 31251.0, 32505.63], "m": [1006.44, 1458.79, 1682.39, 1495.54, 3501.85, 205.44, 1854.29, 3935.22, 1398.19, 2759.09, 1289.04, 4169.84, 2240.32, 1610.85, 1310.93, 2742.06, 919.69, 3331.6, 2667.42, 2269.01, 1715.91, 3716.06, 2695.0, 3120.0, 3092.0, 3977.0, 3977.0, 3977.0, 3977.0, 4605.0, 4105.0, 4105.0, 4105.0, 3161.0, 3161.0, 3161.0], "res": null}, {"id": "L005", "name": "Línea base y evaluación final", "y": [8000.0, 0.0, 8000.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3324.93, 0.0, 0.0, 453.18, 238.27, 0.0, 113.1, 118.25, 117.6, 641.83, 760.28, 0.0, 682.23, 125.0, 3625.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 125.0, 30125.0], "res": null}, {"id": "L006", "name": "Consultancy to support the training of people who attend the purification plants, support maintenance, support sustainability processes, purchase of supplies and support in the promotion of purified water consumption.", "y": [3000.0, 3000.0, 3000.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2254.44, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "2.1.5"}, {"id": "L101", "name": "Una campaña de comunicación implementada para formentar la matriculación de niños, niñas, adolescentes y jóvenes en los niveles de educación primaria, básico y diversificado.", "y": [800.0, 0.0, 0.0], "m": [0.0, 0.0, 0.0, 881.05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 688.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.1"}, {"id": "L102", "name": "Convenio de colaboración con los Ministerios de Educación y Salud para el fortalecimiento de los CECODII's en 25 comunidades  (alimentación en el evento)", "y": [195.0, 0.0, 0.0], "m": [0.0, 0.0, 0.0, 252.53, 0.0, 0.0, 0.0, 21.47, 0.0, 0.0, 0.0, 62.24, 0.0, 68.57, 20.27, -20.27, 39.12, 170.02, 49.16, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.2"}, {"id": "L103", "name": "Entrega de kit de wash para uso de las madres e infantes dentro de los CECODII'S que incluye: (filtros, mini estaciones de lavado de manos, insumos de higiene, candelas de filtros).", "y": [3250.0, 0.0, 3515.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 2830.45, 0.0, 1090.78, 0.0, 0.0, 0.0, 0.0, 122.42, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3921.56, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.2"}, {"id": "L104", "name": "Caja de herramientas de estimulación temprana para la atención a niños que incluye: (alfombras, pelotas, toallas, juguetes, útiles, entre otros) .", "y": [5850.0, 0.0, 0.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4553.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4959.03, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.2"}, {"id": "L105", "name": "Remozamientos en CECODIS que incluye: (piso de cemento, entre otros) .", "y": [6490.0, 0.0, 0.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 738.09, 0.0, 0.0, 2300.0, 0.0, 0.0, 2300.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.2"}, {"id": "L106", "name": "Implementación de 52 estaciones de lavado de manos en escuelas que incluya su respectivo sumidero.", "y": [1625.0, 1825.0, 0.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 262.45, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.3"}, {"id": "L107", "name": "Implementación de 07 estaciones de lavado de manos en telesecundarias .", "y": [7273.0, 0.0, 0.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1986.92, 1221.67, 0.0, 0.0, 0.0, 0.0, 17.88, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 200.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.3"}, {"id": "L108", "name": "Remozamiento en letrinas en establecimientos educativos .", "y": [7488.0, 6571.0, 0.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.3"}, {"id": "L109", "name": "Implementación de trenes de aseo en los establecimientos educativos que incluye: (quemadores artesanales , basureros de clasificación, entre otros).", "y": [910.0, 3650.0, 0.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.5"}, {"id": "L110", "name": "Dotación de filtros purificadores a cada establecimiento.", "y": [2272.0, 1994.0, 0.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1413.12, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6793.36, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.3"}, {"id": "L111", "name": "Implementación de la metodología de ahorro en los diferentes grados de establecimientos educativos atendidos que incluye: (alcancias y libretas, cartilla para el participante, entre otros) .", "y": [6000.0, 10920.0, 0.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1666.03, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 619.18, 1250.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.4"}, {"id": "L112", "name": "Ferias por los derechos humanos de los INAJ que incluye: (alimentación, movilización, entre otros).", "y": [2595.0, 2699.0, 2807.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 280.24, 0.0, 0.0, 0.0, 628.1, 0.0, 525.22, 0.0, 324.57, 0.0, 0.0, 0.0, 439.89, 0.0, 0.0, 131.04, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.4"}, {"id": "L113", "name": "Campaña de reforestación en establecimientos educativos y lugares de convergencia en las comunidades con dotación de plantas.", "y": [1024.0, 899.0, 0.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 116.84, 328.44, 0.0, 397.55, 0.0, 313.21, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.5"}, {"id": "L114", "name": "Implementación de huertos escolares con acompañamiento de OPF.", "y": [1024.0, 899.0, 0.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3200.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.5"}, {"id": "L115", "name": "Implementación de prácticas de cocina con estudiantes de 5to. / 6to.  primaria y nivel básico.", "y": [608.0, 534.0, 0.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.5"}, {"id": "L116", "name": "Implementación de 4 Centros Digitales Comunitarios que incluye: (20 compuradoras, 20 paneles solares, 20 internet satelital Starlik y mobiliario de oficina).", "y": [38961.0, 0.0, 0.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 652.64, 0.0, 616.04, 0.0, 0.0, 0.0, 2148.65, 0.0, 44076.02, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.6"}, {"id": "L117", "name": "Curso de reparación y mantenimiento de equipos a través de INTECAP formando técnicos .", "y": [910.0, 0.0, 0.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 199.88, 456.61, 851.56, 923.42, 195.82, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.6"}, {"id": "L118", "name": "Reorganización y fortalecimiento de la Red de Niñas a través de 10 módulos de formación basada en género y derechos humanos que incluye: (alimentacion y transporte).", "y": [3245.0, 3375.0, 0.0], "m": [0.0, 0.0, 0.0, 0.0, 832.94, 486.84, 675.94, 1351.44, 523.33, 599.93, 617.28, 0.0, 445.1, 29.38, 396.22, 0.0, 526.66, 24.52, 860.99, 0.0, 0.0, 399.65, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.7"}, {"id": "L119", "name": "Desarrollo de Diplomado sobre Formación e Incidencia Politica/Ciudadana impartido a integrantes de la Red.", "y": [0.0, 4050.0, 0.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.93, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.7"}, {"id": "L120", "name": "Desarrollar intercambios comunitarios sobre experiencias de incidencia exitosas.", "y": [0.0, 675.0, 702.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 327.61, 0.0, 1288.77, 173.04, 1622.05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "1.1.7"}, {"id": "L201", "name": "Implementación de metodología de GAPS con enfoque en SAN que incluye: (kits de ahorro, cartillas SAN)", "y": [1125.0, 0.0, 0.0], "m": [0.0, 2336.77, 0.0, 3053.83, 0.0, 696.4, 0.0, 708.82, 757.22, 1762.5, 715.2, 0.0, 925.35, 769.53, 0.0, 0.0, 768.62, 0.0, 770.97, 1217.82, 1525.96, 0.0, 1078.77, 0.0, 1078.77, 1078.77, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "2.1.1"}, {"id": "L202", "name": "Desarrollo de proceso de formación en Seguridad Alimentaria y Nutricion 06 módulos que incluye: (alimentación, materiales, entre otros).", "y": [3250.0, 0.0, 0.0], "m": [0.0, 0.0, 19.43, 0.0, 32.44, 41.39, 49.23, 64.15, 32.59, 13.04, 0.0, 28.06, 0.0, 0.0, 0.0, 26.07, 65.2, 0.0, 111.42, 764.85, 156.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "2.1.3"}, {"id": "L203", "name": "Implementación de PMVL por cada integrante.", "y": [1500.0, 1040.0, 0.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "2.1.2"}, {"id": "L204", "name": "Implementación de huertos familiares.", "y": [975.0, 1014.0, 0.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "2.1.3"}, {"id": "L205", "name": "Entrega de kits de recuperación nutricional a niños con desnutrición aguda identificados por el personal de salud.", "y": [3480.0, 4222.0, 4391.0], "m": [0.0, 0.0, 0.0, 0.0, 1193.27, 744.21, 0.0, 654.47, 0.0, 117.03, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 197.82, 0.0, 229.58, 282.05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "2.1.4"}, {"id": "L206", "name": "Proceso de fortalecimiento de capacidades a operadores de agua, importancia del consumo de agua segura, mantenimiento, operación y reparación de los sistemas.", "y": [1300.0, 1352.0, 1406.0], "m": [0.0, 0.0, 1118.16, 0.0, 0.0, 0.0, 808.53, 139.62, 0.0, 0.0, 37.75, 0.0, 0.0, 0.0, 0.0, 204.02, 0.0, 7.85, 0.0, 973.67, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "2.1.5"}, {"id": "L207", "name": "Monitoreo de la calidad de agua.", "y": [352.0, 366.0, 381.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "2.1.5"}, {"id": "L301", "name": "Otorgar becas de formación técnico / ocupacional.", "y": [1900.0, 1976.0, 2055.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 393.26, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "3.1.1"}, {"id": "L302", "name": "Desarrollo de los cursos (insumos).", "y": [2595.0, 2699.0, 2807.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 131.74, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "3.1.1"}, {"id": "L303", "name": "Entrega de capital semilla (insumos) a 10 emprendimientos ganadores.", "y": [3741.0, 3891.0, 5395.0], "m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "res": "3.1.2"}, {"id": "L400", "name": "Actividades CARM", "y": [388.0, 208.0, 216.0], "m": [0.0, 0.0, 0.0, 0.0, 5.16, 5.17, 9.31, 5.44, 5.45, 5.45, 5.46, 5.45, 5.46, 5.46, 5.45, 6.81, 6.83, 6.83, 6.85, 6.85, 6.85, 9.83, 6.0, 6.0, 222.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0], "res": null}], "cats": {"personal": {"name": "Personal", "y": [106621.0, 116632.0, 124795.0], "m": [6950.85, 7690.64, 8891.3, 9209.41, 8644.98, 8361.66, 6620.9, 6683.06, 6602.23, 6407.64, 8018.0, 7865.63, 7667.44, 7711.82, 5678.77, 7390.54, 6288.07, 6612.3, 6733.76, 6310.85, 6439.82, 6440.89, 11757.18, 10613.94, 10898.94, 12532.94, 13026.94, 13026.94, 13026.94, 13026.94, 11612.9, 11612.9, 12063.86, 12063.86, 12063.86, 12063.86]}, "beneficios": {"name": "Beneficios", "y": [47786.0, 52252.0, 55909.0], "m": [5275.86, 5683.97, 4817.97, 4445.56, 3969.25, 3841.04, 3058.08, 3495.81, 3068.45, 2876.81, 3963.03, 3949.45, 3537.03, 3802.98, 3783.9, 3938.18, 2863.86, 3596.53, 3219.9, 3082.41, 3397.5, 3079.24, 5527.0, 5012.0, 5141.0, 5875.0, 6098.0, 6098.0, 6114.0, 6114.0, 5478.0, 5478.0, 5681.0, 5681.0, 5681.0, 5681.0]}, "indirectos": {"name": "Costos indirectos (18%)", "y": [57480.66, 48401.46, 46660.25], "m": [2381.97, 3114.42, 3069.56, 3601.36, 3437.51, 3281.34, 3334.17, 3843.7, 2756.16, 3516.65, 2975.67, 4097.68, 3171.65, 2854.75, 2060.06, 2836.09, 2116.08, 3018.99, 2925.18, 4650.92, 2807.95, 12745.94, 4048.01, 5507.73, 4492.39, 4445.05, 4379.93, 4793.93, 4382.81, 4495.85, 4036.84, 4036.84, 4154.55, 3984.63, 3984.63, 9384.63]}}, "inds": [{"code": "Objetivo General a", "text": "Number of people reached in a fiscal year", "result": null, "result_text": null, "objective": "OG", "objective_text": "Contribuir en la generación de un  pensamiento crítico en la niñez, adolescencia y juventud por medio de estrategias de gobernanza y sinergias entre actores locales.", "meta": 4100.0, "alc": 5873.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Objetivo General b", "text": "% de reducción de embarazos en niñas y adolescentes a través del acceso a la educación y salud integral.", "result": null, "result_text": null, "objective": "OG", "objective_text": "Contribuir en la generación de un  pensamiento crítico en la niñez, adolescencia y juventud por medio de estrategias de gobernanza y sinergias entre actores locales.", "meta": 2.0, "alc": 0.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Objetivo General c", "text": "% de participantes que ejercen sus derechos a nivel comunitario y municipal.", "result": null, "result_text": null, "objective": "OG", "objective_text": "Contribuir en la generación de un  pensamiento crítico en la niñez, adolescencia y juventud por medio de estrategias de gobernanza y sinergias entre actores locales.", "meta": 10.0, "alc": 0.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Objetivo Específico 1a", "text": "# de recién nacidos, niños, adolescentes y jóvenes que mejoran sus capacidades a través de iniciativas que proporcionen entornos seguros y saludables en las escuelas y aumenten el acceso a las mismas.", "result": null, "result_text": null, "objective": "OE 1", "objective_text": "Fortalecer las capacidades en Infantes, Niñez, Adolescencia y Juventud, con iniciativas que promueven el acceso y promoción en establecimientos educativos, en un ambiente sano y seguro.  (Niñez en acción por el Cambio)", "meta": 3500.0, "alc": 4624.0, "fy25": 1338.0, "fy26": 3272.0, "base": 0.0}, {"code": "Resultado 1.1.1a", "text": "% de incremento de la matriculación en niños y niñas en edad escolar en 52 comunidades de Cobán", "result": "1.1.1", "result_text": "Niños, niñas, adolescentes y jóvenes matriculados en escuelas de educación primaria, básico y diversificado.", "objective": "OE 1", "objective_text": "Fortalecer las capacidades en Infantes, Niñez, Adolescencia y Juventud, con iniciativas que promueven el acceso y promoción en establecimientos educativos, en un ambiente sano y seguro.  (Niñez en acción por el Cambio)", "meta": 0.1, "alc": 0.2376, "fy25": 0.0, "fy26": 0.2376, "base": 0.0}, {"code": "Resultado 1.1.1b", "text": "# de niños, adolescentes y jóvenes que retoman sus estudios por medio de la sensibiilización sobre el derecho a la educación", "result": "1.1.1", "result_text": "Niños, niñas, adolescentes y jóvenes matriculados en escuelas de educación primaria, básico y diversificado.", "objective": "OE 1", "objective_text": "Fortalecer las capacidades en Infantes, Niñez, Adolescencia y Juventud, con iniciativas que promueven el acceso y promoción en establecimientos educativos, en un ambiente sano y seguro.  (Niñez en acción por el Cambio)", "meta": 500.0, "alc": 4624.0, "fy25": 1338.0, "fy26": 3272.0, "base": null}, {"code": "Resultado 1.1.2a", "text": "# de infantes que inician un proceso de educación temprana y participan en clases y programas disponibles de 25 Centros Comunitarios de Desarrollo Integral Infantil (CECODII)", "result": "1.1.2", "result_text": "Madres de infantes de 25 comunidades sensibilizadas y participando en la educación inicial a través de los  Centros Comunitarios de Desarrollo Integral CECODII's", "objective": "OE 1", "objective_text": "Fortalecer las capacidades en Infantes, Niñez, Adolescencia y Juventud, con iniciativas que promueven el acceso y promoción en establecimientos educativos, en un ambiente sano y seguro.  (Niñez en acción por el Cambio)", "meta": 600.0, "alc": 1002.0, "fy25": 287.0, "fy26": 668.0, "base": 0.0}, {"code": "Resultado 1.1.2b", "text": "% de madres concientizadas sobre la importancia de la educación temprana y adoptan prácticas de estimulación temprana en los infantes.", "result": "1.1.2", "result_text": "Madres de infantes de 25 comunidades sensibilizadas y participando en la educación inicial a través de los  Centros Comunitarios de Desarrollo Integral CECODII's", "objective": "OE 1", "objective_text": "Fortalecer las capacidades en Infantes, Niñez, Adolescencia y Juventud, con iniciativas que promueven el acceso y promoción en establecimientos educativos, en un ambiente sano y seguro.  (Niñez en acción por el Cambio)", "meta": 0.5, "alc": 1.76, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 1.1.2c", "text": "% de madres que reconocen los derechos de los infantes en su aprendizaje inicial.", "result": "1.1.2", "result_text": "Madres de infantes de 25 comunidades sensibilizadas y participando en la educación inicial a través de los  Centros Comunitarios de Desarrollo Integral CECODII's", "objective": "OE 1", "objective_text": "Fortalecer las capacidades en Infantes, Niñez, Adolescencia y Juventud, con iniciativas que promueven el acceso y promoción en establecimientos educativos, en un ambiente sano y seguro.  (Niñez en acción por el Cambio)", "meta": 0.5, "alc": 0.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 1.1.3a", "text": "# de estudiantes que adoptan el hábito de consumo de agua segura, higiene y saneamiento.", "result": "1.1.3", "result_text": "3000 niños y niñas y 500 adolescentes y jóvenes , mejoran sus practicas de consumo de agua segura, higiene y saneamiento.", "objective": "OE 1", "objective_text": "Fortalecer las capacidades en Infantes, Niñez, Adolescencia y Juventud, con iniciativas que promueven el acceso y promoción en establecimientos educativos, en un ambiente sano y seguro.  (Niñez en acción por el Cambio)", "meta": 3500.0, "alc": 3120.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 1.1.3b", "text": "% de reducción de enfermedades gastrointestinales en estudiantes", "result": "1.1.3", "result_text": "3000 niños y niñas y 500 adolescentes y jóvenes , mejoran sus practicas de consumo de agua segura, higiene y saneamiento.", "objective": "OE 1", "objective_text": "Fortalecer las capacidades en Infantes, Niñez, Adolescencia y Juventud, con iniciativas que promueven el acceso y promoción en establecimientos educativos, en un ambiente sano y seguro.  (Niñez en acción por el Cambio)", "meta": 0.025, "alc": 0.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 1.1.4a", "text": "# de estudiantes que adoptan la cultura de ahorro e invierten sus ahorros en su proceso de aprendizaje en los niveles primaria y telesecundaria", "result": "1.1.4", "result_text": "3000 niños y niñas y 500 adolescentes y jóvenes adoptan la cultura de ahorro a través de la metodología de inclusión financiera con enfoque en derechos humanos.", "objective": "OE 1", "objective_text": "Fortalecer las capacidades en Infantes, Niñez, Adolescencia y Juventud, con iniciativas que promueven el acceso y promoción en establecimientos educativos, en un ambiente sano y seguro.  (Niñez en acción por el Cambio)", "meta": 3500.0, "alc": 747.0, "fy25": 0.0, "fy26": 747.0, "base": 0.0}, {"code": "Resultado 1.1.4b", "text": "# de estudiantes que reconocen sus derechos a través del proceso de capacitación.", "result": "1.1.4", "result_text": "3000 niños y niñas y 500 adolescentes y jóvenes adoptan la cultura de ahorro a través de la metodología de inclusión financiera con enfoque en derechos humanos.", "objective": "OE 1", "objective_text": "Fortalecer las capacidades en Infantes, Niñez, Adolescencia y Juventud, con iniciativas que promueven el acceso y promoción en establecimientos educativos, en un ambiente sano y seguro.  (Niñez en acción por el Cambio)", "meta": 1700.0, "alc": 360.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 1.1.5a", "text": "# de escuelas y telesecundarias que aplican iniciativas para el cuidado del medio ambiente", "result": "1.1.5", "result_text": "3000 niños y niñas y 500 adolescentes y jóvenes adoptan prácticas amigables con el manejo de los recursos naturales y de alimentación saludable.", "objective": "OE 1", "objective_text": "Fortalecer las capacidades en Infantes, Niñez, Adolescencia y Juventud, con iniciativas que promueven el acceso y promoción en establecimientos educativos, en un ambiente sano y seguro.  (Niñez en acción por el Cambio)", "meta": 52.0, "alc": 20.0, "fy25": 0.0, "fy26": 20.0, "base": 0.0}, {"code": "Resultado 1.1.5b", "text": "% de estudiantes que reconocen la importancia de una alimentación saludable a través de la implementación de huertos escolares", "result": "1.1.5", "result_text": "3000 niños y niñas y 500 adolescentes y jóvenes adoptan prácticas amigables con el manejo de los recursos naturales y de alimentación saludable.", "objective": "OE 1", "objective_text": "Fortalecer las capacidades en Infantes, Niñez, Adolescencia y Juventud, con iniciativas que promueven el acceso y promoción en establecimientos educativos, en un ambiente sano y seguro.  (Niñez en acción por el Cambio)", "meta": 0.5, "alc": 0.46, "fy25": 0.0, "fy26": 0.46, "base": 0.0}, {"code": "Resultado 1.1.6a", "text": "# de comunidades que brindan acceso a servicios tecnologicos y otros beneficios brindados", "result": "1.1.6", "result_text": "7 comunidades brindan acceso a recursos tecnológicos a la niñez, adolescencia y juventud, por medio de los Centros Comunitarios Digitales", "objective": "OE 1", "objective_text": "Fortalecer las capacidades en Infantes, Niñez, Adolescencia y Juventud, con iniciativas que promueven el acceso y promoción en establecimientos educativos, en un ambiente sano y seguro.  (Niñez en acción por el Cambio)", "meta": 5.0, "alc": 3.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 1.1.7a", "text": "# de acciones de incidencia política a nivel local y municipal, desarrolladas por las integrantes de la RED", "result": "1.1.7", "result_text": "Red de niñas y adolescentes fortalecida, ejercen y promueven sus derechos a nivel comunitario y municipal.", "objective": "OE 1", "objective_text": "Fortalecer las capacidades en Infantes, Niñez, Adolescencia y Juventud, con iniciativas que promueven el acceso y promoción en establecimientos educativos, en un ambiente sano y seguro.  (Niñez en acción por el Cambio)", "meta": 52.0, "alc": 0.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 1.1.7b", "text": "Índice de capacidades de organización y fortalecimiento de la Red de Niñas", "result": "1.1.7", "result_text": "Red de niñas y adolescentes fortalecida, ejercen y promueven sus derechos a nivel comunitario y municipal.", "objective": "OE 1", "objective_text": "Fortalecer las capacidades en Infantes, Niñez, Adolescencia y Juventud, con iniciativas que promueven el acceso y promoción en establecimientos educativos, en un ambiente sano y seguro.  (Niñez en acción por el Cambio)", "meta": 0.1, "alc": 0.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Objetivo Específico 2a", "text": "# de mujeres que crían niños menores de cinco años con capacidades fortalecidas y que adoptan hábitos saludables que previenen el hambre infantil", "result": null, "result_text": null, "objective": "OE 2", "objective_text": "Fortalecer las capacidades en madres de niños menores de 05 años para la adopción de buenas prácticas para la salud y prevención de la inseguridad alimentaria en los infantes.", "meta": 500.0, "alc": 373.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 2.1.1a", "text": "# de madres que adoptan la cultura de ahorro y prestamo  comunitario", "result": "2.1.1", "result_text": "25 grupos de ahorro y préstamo conformado por madres con niños menores de 5 años, son capacitados y sensibilizados en las buenas prácticas para la prevención de la inseguridad alimentaría.", "objective": "OE 2", "objective_text": "Fortalecer las capacidades en madres de niños menores de 05 años para la adopción de buenas prácticas para la salud y prevención de la inseguridad alimentaria en los infantes.", "meta": 600.0, "alc": 373.0, "fy25": 0.0, "fy26": 363.0, "base": 0.0}, {"code": "Resultado 2.1.1b", "text": "# de madres que deciden si los ahorros son invertidos para la seguridad alimentaria de los infantes y su familia", "result": "2.1.1", "result_text": "25 grupos de ahorro y préstamo conformado por madres con niños menores de 5 años, son capacitados y sensibilizados en las buenas prácticas para la prevención de la inseguridad alimentaría.", "objective": "OE 2", "objective_text": "Fortalecer las capacidades en madres de niños menores de 05 años para la adopción de buenas prácticas para la salud y prevención de la inseguridad alimentaria en los infantes.", "meta": 300.0, "alc": 25.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 2.1.1c", "text": "# de madres que deciden si los préstamos son invertidos para la seguridad alimentaria de los infantes y su familia.", "result": "2.1.1", "result_text": "25 grupos de ahorro y préstamo conformado por madres con niños menores de 5 años, son capacitados y sensibilizados en las buenas prácticas para la prevención de la inseguridad alimentaría.", "objective": "OE 2", "objective_text": "Fortalecer las capacidades en madres de niños menores de 05 años para la adopción de buenas prácticas para la salud y prevención de la inseguridad alimentaria en los infantes.", "meta": 300.0, "alc": 50.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 2.1.2a", "text": "# de prácticas del plan de manejo de vivienda y lote adoptadas por las madres de los grupos de ahorro", "result": "2.1.2", "result_text": "500  madres con niños menores de 5 años mejoran sus condiciones de vivienda", "objective": "OE 2", "objective_text": "Fortalecer las capacidades en madres de niños menores de 05 años para la adopción de buenas prácticas para la salud y prevención de la inseguridad alimentaria en los infantes.", "meta": 6.0, "alc": 0.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 2.1.2b", "text": "# de madres de los grupos de ahorro que adoptan al menos 6 prácticas del plan de manejo de vivienda y lote", "result": "2.1.2", "result_text": "500  madres con niños menores de 5 años mejoran sus condiciones de vivienda", "objective": "OE 2", "objective_text": "Fortalecer las capacidades en madres de niños menores de 05 años para la adopción de buenas prácticas para la salud y prevención de la inseguridad alimentaria en los infantes.", "meta": 500.0, "alc": 0.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 2.1.3a", "text": "# de huertos familiares implementados por las integrantes de los GAAPS", "result": "2.1.3", "result_text": "500 madres de niños menores de 5 años mejoran su diversidad  de dieta por medio del consumo de alimentos locales.", "objective": "OE 2", "objective_text": "Fortalecer las capacidades en madres de niños menores de 05 años para la adopción de buenas prácticas para la salud y prevención de la inseguridad alimentaria en los infantes.", "meta": 52.0, "alc": 6.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 2.1.3b", "text": "# de familias que alcanzaron una dieta variada con el consumo de alimentos locales que aportan a la nutrución", "result": "2.1.3", "result_text": "500 madres de niños menores de 5 años mejoran su diversidad  de dieta por medio del consumo de alimentos locales.", "objective": "OE 2", "objective_text": "Fortalecer las capacidades en madres de niños menores de 05 años para la adopción de buenas prácticas para la salud y prevención de la inseguridad alimentaria en los infantes.", "meta": 300.0, "alc": 126.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 2.1.4a", "text": "# de niños que reciben asistencia alimentaria a través del plan de recuperación nutricional", "result": "2.1.4", "result_text": "Niños identificados con DA severa y/o moderada recuperan su estado nutricional, y mejoran sus condiciones de vida.", "objective": "OE 2", "objective_text": "Fortalecer las capacidades en madres de niños menores de 05 años para la adopción de buenas prácticas para la salud y prevención de la inseguridad alimentaria en los infantes.", "meta": 25.0, "alc": 21.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 2.1.4b", "text": "# de niños y niñas que logran recuperarse de la desnutrición aguda moderada y severa", "result": "2.1.4", "result_text": "Niños identificados con DA severa y/o moderada recuperan su estado nutricional, y mejoran sus condiciones de vida.", "objective": "OE 2", "objective_text": "Fortalecer las capacidades en madres de niños menores de 05 años para la adopción de buenas prácticas para la salud y prevención de la inseguridad alimentaria en los infantes.", "meta": 25.0, "alc": 21.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 2.1.5a", "text": "# de familias que adoptan el consumo de agua segura", "result": "2.1.5", "result_text": "11 sistemas de purificación de agua brindan acceso a agua segura a las familias de las 11 diferentes comunidades.", "objective": "OE 2", "objective_text": "Fortalecer las capacidades en madres de niños menores de 05 años para la adopción de buenas prácticas para la salud y prevención de la inseguridad alimentaria en los infantes.", "meta": 300.0, "alc": 300.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 2.1.5b", "text": "% de reducción de enfermedades gastrointestinales en niños menores de 5 años", "result": "2.1.5", "result_text": "11 sistemas de purificación de agua brindan acceso a agua segura a las familias de las 11 diferentes comunidades.", "objective": "OE 2", "objective_text": "Fortalecer las capacidades en madres de niños menores de 05 años para la adopción de buenas prácticas para la salud y prevención de la inseguridad alimentaria en los infantes.", "meta": 0.025, "alc": 0.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Objetivo Específico 3a", "text": "# de jóvenes emprendiendo y ahorrando para mejorar sus condiciones de vida.", "result": null, "result_text": null, "objective": "OE 3", "objective_text": "Promover en los adolescentes y jóvenes el espiritú emprendedor y asegurar la inclusión financiera para mejorar sus medios de vida", "meta": 300.0, "alc": 0.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 3.1.1a", "text": "# de jóvenes que incrementan sus capacidades tecnico ocupacional", "result": "3.1.1", "result_text": "300 adolescentes y jóvenes con acceso a becas finalizan su proceso de formación técnica laboral/ocupacional", "objective": "OE 3", "objective_text": "Promover en los adolescentes y jóvenes el espiritú emprendedor y asegurar la inclusión financiera para mejorar sus medios de vida", "meta": 300.0, "alc": 75.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}, {"code": "Resultado 3.1.2a", "text": "# de emprendimientos desarrollados a través de los cursos de formación", "result": "3.1.2", "result_text": "75 jóvenes que finalizan su proceso de becas inician un emprendimiento en su región por medio de un emprendimiento", "objective": "OE 3", "objective_text": "Promover en los adolescentes y jóvenes el espiritú emprendedor y asegurar la inclusión financiera para mejorar sus medios de vida", "meta": 75.0, "alc": 0.0, "fy25": 0.0, "fy26": 0.0, "base": 0.0}], "total": 1000000}</script>
+<script>
+(function(){
+'use strict';
+var D=JSON.parse(document.getElementById('data').textContent);
+var NM=36, LAST=21;
+var MN=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+var MNL=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+function mIdx(i){ var k=10+i; return {m:k%12,y:2024+Math.floor(k/12)}; }
+function mLab(i){ var o=mIdx(i); return MN[o.m]+' '+String(o.y).slice(2); }
+function mLong(i){ var o=mIdx(i); return MNL[o.m]+' '+o.y; }
+var STORE='kaw-ixqal-iv-v2';
+var save={map:{},theme:'light'};
+try{ var raw=localStorage.getItem(STORE); if(raw) save=Object.assign(save,JSON.parse(raw)); }catch(e){}
+function persist(){ try{ localStorage.setItem(STORE,JSON.stringify(save)); }catch(e){} }
+document.documentElement.setAttribute('data-theme',save.theme);
+
+var state={cut:LAST,tab:'panorama',filt:'all',level:'res',preset:'rinde',x:'pe',y:'avance',size:'bud',color:'estado',clip:true,sel:null,verif:'cap',sortBy:'rend',sortDir:'desc',mview:'real',mlevel:'res',open:{},armReset:false,playing:false};
+var PRESETS={
+  rinde:{t:'¿El avance justifica el gasto?',q:'¿El avance justifica el gasto?',x:'pe',y:'avance',size:'bud',color:'estado',
+    what:'Compara, para cada resultado, cuánto de su presupuesto ya se gastó (eje horizontal) con cuánto de sus indicadores ya se logró (eje vertical).',
+    zones:{above:{t:'Avanza más de lo que gasta',k:'ok'},below:{t:'Gasta más de lo que avanza',k:'bad'}},
+    how:'La línea punteada es “avance igual al gasto”. Una burbuja <b>arriba</b> de la línea ha logrado más de lo que ha gastado (rinde). Una <b>abajo</b> ha gastado más de lo que ha logrado.'},
+  ritmo:{t:'¿Vamos gastando lo planificado?',q:'¿Vamos gastando lo planificado?',x:'plan',y:'real',size:'bud',color:'obj',
+    what:'Compara, para cada resultado, lo que debía llevarse gastado según el plan (eje horizontal) con lo que realmente se ha gastado (eje vertical).',
+    zones:{above:{t:'Gasta más que el plan',k:'warn'},below:{t:'Gasta menos que el plan',k:'info'}},
+    how:'La línea punteada es “gastar justo lo planificado”. Una burbuja <b>arriba</b> de la línea gasta más que el plan. Una <b>abajo</b> va con gasto atrasado. Este cruce sí se puede ver mes a mes con el deslizador.'},
+  cierre:{t:'¿Alcanzará el presupuesto?',q:'¿Alcanzará el presupuesto?',x:'bud',y:'cierre',size:'real',color:'obj',
+    what:'Compara el presupuesto de cada resultado (eje horizontal) con lo que costaría al terminar el proyecto: lo gastado más lo proyectado (eje vertical).',
+    zones:{above:{t:'Cerraría con sobregasto',k:'bad'},below:{t:'Cerraría con saldo',k:'ok'}},
+    how:'La línea punteada es “cerrar justo con el presupuesto”. Una burbuja <b>arriba</b> terminaría gastando más de lo aprobado. Una <b>abajo</b> terminaría con dinero sin usar. Este cruce sí se puede ver mes a mes.'},
+  costo:{t:'¿Cuánto cuesta cada punto de avance?',q:'¿Cuánto cuesta cada punto de avance?',x:'avance',y:'cpp',size:'bud',color:'obj',
+    what:'Compara cuánto avance de indicadores tiene cada resultado (eje horizontal) con el dinero que se ha gastado por cada punto porcentual de avance (eje vertical).',
+    zones:{above:{t:'Avance caro',k:'bad'},below:{t:'Avance barato',k:'ok'}},
+    how:'Mientras más <b>arriba</b>, más dinero se ha gastado por cada punto de avance. Mientras más <b>abajo</b>, más barato ha sido avanzar. Los resultados sin avance no aparecen porque no se puede dividir entre cero.'},
+  libre:{t:'Elegir yo las variables',q:'Cruce libre de variables',
+    what:'Elige tú qué variable va en cada eje, en el tamaño y en el color de las burbujas.',
+    how:'Abajo, en “Qué significa cada variable”, está la definición de lo que elegiste.'}
+};
+var OBJ_COL={'OE 1':'o-1','OE 2':'o-2','OE 3':'o-3','Apoyo':'o-A'};
+var METRICS={
+  bud:{l:'Presupuesto',u:'$',d:'Total aprobado para el resultado.'},
+  real:{l:'Gastado al corte',u:'$',d:'Dinero gastado hasta el mes de corte.'},
+  plan:{l:'Plan al corte',u:'$',d:'Lo que debía llevarse gastado hasta el corte. Es el presupuesto de cada año repartido en partes iguales por mes.'},
+  proy:{l:'Proyectado sep 26 a oct 27',u:'$',d:'Gasto proyectado desde septiembre 2026 hasta el final del proyecto.'},
+  cierre:{l:'Cierre proyectado',u:'$',d:'Gastado más proyectado: lo que costaría el resultado al terminar.'},
+  saldo:{l:'Saldo al cierre',u:'$',d:'Presupuesto menos cierre proyectado. Si es negativo, hay sobregasto.'},
+  pe:{l:'% del presupuesto gastado',u:'%',d:'Gastado dividido entre presupuesto.'},
+  ritmo:{l:'Gasto real frente al plan (%)',u:'%',ref:100,d:'Gastado dividido entre plan al corte. 100% significa que va al día.'},
+  cp:{l:'Cierre frente al presupuesto (%)',u:'%',ref:100,d:'Cierre proyectado dividido entre presupuesto. Más de 100% es sobregasto.'},
+  avance:{l:'Avance de indicadores (%)',u:'%',d:'Promedio del avance de todos los indicadores del resultado. Cada uno cuenta máximo 100% y los que no han reportado cuentan 0%. Es el último reporte (ago 2026).'},
+  rend:{l:'Rendimiento: avance entre gasto',u:'x',ref:1,d:'Avance dividido entre % gastado. 1.0× avanza lo mismo que gasta; más de 1.0× rinde; menos de 1.0× gasta más de lo que avanza.'},
+  cpp:{l:'Costo por punto de avance',u:'$/pt',d:'Dinero gastado por cada punto porcentual de avance de indicadores.'},
+  brecha:{l:'Avance menos gasto (puntos)',u:'pts',ref:0,d:'Avance de indicadores menos % del presupuesto gastado. Positivo rinde; negativo gasta más de lo que avanza.'}
+};
+var SIZES={bud:'Presupuesto',real:'Gastado al corte',cierre:'Cierre proyectado',saldo:'Saldo (valor absoluto)',uni:'Todas iguales'};
+var COLORS={estado:'Estado (avance frente a gasto)',obj:'Objetivo',none:'Sin color'};
+
+/* ---------- utilidades ---------- */
+function sum(a,i,j){ var s=0; for(var k=i;k<=j;k++) s+=a[k]||0; return s; }
+function tot(a){ return a.reduce(function(s,x){return s+x;},0); }
+function $(n){ return (n<0?'−⁠':'')+'$'+Math.round(Math.abs(n)).toLocaleString('en-US'); }
+function sg(n){ return Math.round(n)===0?'$0':(n>0?'+':'−⁠')+'$'+Math.round(Math.abs(n)).toLocaleString('en-US'); }
+function P(n){ return Math.round(n)+'%'; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+function clamp(x,a,b){ return Math.max(a,Math.min(b,x)); }
+function planAt(l,i){ return l.y[Math.floor(i/12)]/12; }
+function chip(k,t){ return '<span class="chip '+k+'">'+t+'</span>'; }
+function trunc(s,n){ return s.length>n?s.slice(0,n-1)+'…':s; }
+function fm(k,v){
+  if(v==null||!isFinite(v)) return '—';
+  var u=METRICS[k].u;
+  if(u==='$'||u==='$/pt') return $(v)+(u==='$/pt'?' por pt':'');
+  if(u==='%') return P(v);
+  if(u==='x') return v.toFixed(2)+'×';
+  if(u==='pts') return (v>0?'+':(v<0?'−':''))+Math.abs(Math.round(v))+' pts';
+  return String(v);
+}
+function fax(k,v){
+  var u=METRICS[k].u;
+  if(u==='$'||u==='$/pt') return Math.abs(v)>=1000?'$'+Math.round(v/1000)+'k':'$'+Math.round(v);
+  if(u==='%') return Math.round(v)+'%'; if(u==='x') return (Math.round(v*10)/10)+'×'; return Math.round(v)+'';
+}
+
+/* ---------- estructura ---------- */
+var RES=[],OBJ={},OG=[];
+D.inds.forEach(function(i){
+  if(i.objective==='OG'){ OG.push(i); return; }
+  if(!OBJ[i.objective]) OBJ[i.objective]={code:i.objective,text:i.objective_text,inds:[],results:[]};
+  if(!i.result){ OBJ[i.objective].inds.push(i); return; }
+  var r=RES.filter(function(x){return x.code===i.result;})[0];
+  if(!r){ r={code:i.result,text:i.result_text,obj:i.objective,inds:[]}; RES.push(r); OBJ[i.objective].results.push(r); }
+  r.inds.push(i);
+});
+var OBJS=Object.keys(OBJ).sort();
+function resOf(l){ return save.map[l.id]!==undefined?save.map[l.id]:(l.res||'apoyo'); }
+function resObj(code){ if(code==='apoyo') return 'Apoyo'; return RES.filter(function(r){return r.code===code;})[0].obj; }
+
+/* ---------- cálculos ---------- */
+function lineM(l,c){
+  var bud=tot(l.y),plan=0,real=sum(l.m,0,c);
+  for(var i=0;i<=c;i++) plan+=planAt(l,i);
+  var proy=sum(l.m,LAST+1,NM-1),cierre=tot(l.m);
+  return {l:l,bud:bud,plan:plan,real:real,proy:proy,cierre:cierre,saldo:bud-cierre,pe:bud?real/bud*100:(real>0?Infinity:0)};
+}
+function aggM(arr){
+  var a={bud:0,plan:0,real:0,proy:0,cierre:0,saldo:0};
+  arr.forEach(function(x){ a.bud+=x.bud;a.plan+=x.plan;a.real+=x.real;a.proy+=x.proy;a.cierre+=x.cierre;a.saldo+=x.saldo; });
+  a.pe=a.bud?a.real/a.bud*100:0; return a;
+}
+function catM(cc,cut){
+  var bud=tot(cc.y),plan=0; for(var i=0;i<=cut;i++) plan+=cc.y[Math.floor(i/12)]/12;
+  var real=sum(cc.m,0,cut),proy=sum(cc.m,LAST+1,NM-1),cierre=tot(cc.m);
+  return {bud:bud,plan:plan,real:real,proy:proy,cierre:cierre,saldo:bud-cierre,pe:bud?real/bud*100:0};
+}
+function isPct(i){ return /^%/.test(i.text.trim()); }
+function isIdx(i){ return /índice/i.test(i.text); }
+function fv(i,v){
+  if(v==null) return '—';
+  if(isPct(i)){ var k=(i.meta!=null&&i.meta<=1)?100:1; return (Math.round(v*k*10)/10)+'%'; }
+  if(isIdx(i)) return v.toFixed(2);
+  return Math.round(v).toLocaleString('en-US');
+}
+function indM(i){
+  var has=i.alc!=null&&i.alc>0&&i.meta>0, av=has?i.alc/i.meta:null, flag=has&&av>2, exp=(LAST+1)/NM, s;
+  var eff=!has?0:(flag&&state.verif==='zero'?0:Math.min(1,av));
+  if(!has) s={k:'na',t:'Sin reporte (0%)'};
+  else if(flag) s={k:'warn',t:'Sobrecumplido, verificar'};
+  else if(av>=1) s={k:'ok',t:'Cumplido'};
+  else { var r=av/exp; s=r>=.95?{k:'ok',t:'Al ritmo'}:(r>=.8?{k:'warn',t:'Rezagado'}:{k:'bad',t:'Muy rezagado'}); }
+  return {i:i,has:has,av:av,eff:eff,s:s,check:flag};
+}
+function signal(avg,pe,real){
+  if(avg==null) return {k:'na',t:'Sin indicadores (apoyo)'};
+  if(avg===0&&real===0) return {k:'na',t:'Sin avance ni gasto'};
+  if(avg>=99&&pe>105) return {k:'warn',t:'Cumplido, gasto sobre el presupuesto'};
+  var gap=avg-Math.min(pe,999);
+  return gap<-30?{k:'bad',t:'Gasta más de lo que avanza'}:(gap>30?{k:'info',t:'Avanza con poco gasto'}:{k:'ok',t:'Gasto y avance alineados'});
+}
+function meanEff(inds){ return inds.length?inds.map(indM).reduce(function(s,m){return s+m.eff;},0)/inds.length*100:0; }
+function resAvg(r){ return meanEff(r.inds); }
+function objAvance(o){ var a=OBJ[o].inds.slice(); OBJ[o].results.forEach(function(r){ a=a.concat(r.inds); }); return meanEff(a); }
+function calc(c){
+  var results=RES.map(function(r){
+    var ls=D.lines.filter(function(l){return resOf(l)===r.code;}).map(function(l){return lineM(l,c);});
+    var a=aggM(ls),avg=resAvg(r);
+    return {r:r,lines:ls,a:a,avg:avg,inds:r.inds.map(indM),sig:signal(avg,a.pe,a.real)};
+  });
+  var apoyo=D.lines.filter(function(l){return resOf(l)==='apoyo';}).map(function(l){return lineM(l,c);});
+  var resLines=[]; results.forEach(function(r){resLines=resLines.concat(r.lines);});
+  var cats={personal:catM(D.cats.personal,c),beneficios:catM(D.cats.beneficios,c),indirectos:catM(D.cats.indirectos,c)};
+  var gRes=aggM(resLines),gAp=aggM(apoyo),all=aggM([gRes,gAp,cats.personal,cats.beneficios,cats.indirectos]);
+  var allInds=OG.concat(RES.reduce(function(a,r){return a.concat(r.inds);},[])).concat(OBJS.reduce(function(a,o){return a.concat(OBJ[o].inds);},[])).map(indM);
+  return {results:results,apoyo:apoyo,cats:cats,gRes:gRes,gAp:gAp,all:all,nInd:allInds.length,
+    nZero:allInds.filter(function(x){return !x.has;}).length,
+    flagged:allInds.filter(function(x){return x.check;}).map(function(x){return x.i.code.replace('Resultado ','').replace('Objetivo Específico ','OE ').replace('Objetivo General ','OG ');}),
+    alcance:allInds.reduce(function(s,x){return s+x.eff;},0)/allInds.length};
+}
+function bandAlc(r){ return r==null?{k:'na',t:'Reporte desde ago 2026'}:(r>=.95?{k:'ok',t:'Al ritmo'}:(r>=.8?{k:'warn',t:'Rezagado'}:{k:'bad',t:'Muy rezagado'})); }
+function bandCost(r){ return r<=1.05?{k:'ok',t:r<.8?'Bajo el ritmo':'Al ritmo'}:(r<=1.2?{k:'warn',t:'Sobre el ritmo'}:{k:'bad',t:'Muy sobre el ritmo'}); }
+
+/* ---------- entidades para el explorador ---------- */
+function finish(e){
+  e.cp=e.bud?e.cierre/e.bud*100:null;
+  e.pe=e.bud?e.real/e.bud*100:(e.real>0?null:0);
+  e.ritmo=e.plan>0?e.real/e.plan*100:null;
+  e.brecha=(e.avance!=null&&e.pe!=null)?e.avance-e.pe:null;
+  e.rend=(e.avance!=null&&e.pe>0)?e.avance/e.pe:null;
+  e.cpp=(e.avance!=null&&e.avance>0)?e.real/e.avance:null;
+  e.sig=e.avance==null&&e.real===0?{k:'na',t:'Sin avance ni gasto'}:signal(e.avance,e.pe==null?999:e.pe,e.real);
+  return e;
+}
+function monthlyOf(lines){
+  var p=Array(NM).fill(0),v=Array(NM).fill(0);
+  lines.forEach(function(l){ for(var i=0;i<NM;i++){ p[i]+=planAt(l,i); v[i]+=l.m[i]; } });
+  return {p:p,v:v};
+}
+function entities(c){
+  var G=calc(c),out=[];
+  if(state.level==='res'){
+    G.results.forEach(function(r){
+      var mo=monthlyOf(r.lines.map(function(x){return x.l;}));
+      out.push(finish({id:r.r.code,short:r.r.code,name:r.r.text,obj:r.r.obj,kind:'res',bud:r.a.bud,plan:r.a.plan,real:r.a.real,proy:r.a.proy,cierre:r.a.cierre,saldo:r.a.saldo,avance:r.avg,mo:mo,ref:r}));
+    });
+    if(G.apoyo.length){ var a=aggM(G.apoyo); out.push(finish({id:'apoyo',short:'Apoyo',name:'Apoyo y operación (viáticos, oficinas, vehículos, evaluación)',obj:'Apoyo',kind:'apoyo',bud:a.bud,plan:a.plan,real:a.real,proy:a.proy,cierre:a.cierre,saldo:a.saldo,avance:null,mo:monthlyOf(G.apoyo.map(function(x){return x.l;})),ref:null})); }
+  } else {
+    G.results.forEach(function(r){ r.lines.forEach(function(x){
+      out.push(finish({id:x.l.id,short:x.l.id,name:x.l.name,obj:r.r.obj,kind:'line',parent:r.r.code,bud:x.bud,plan:x.plan,real:x.real,proy:x.proy,cierre:x.cierre,saldo:x.saldo,avance:r.avg,mo:monthlyOf([x.l]),ref:r}));
+    }); });
+    G.apoyo.forEach(function(x){ out.push(finish({id:x.l.id,short:x.l.id,name:x.l.name,obj:'Apoyo',kind:'line',parent:null,bud:x.bud,plan:x.plan,real:x.real,proy:x.proy,cierre:x.cierre,saldo:x.saldo,avance:null,mo:monthlyOf([x.l]),ref:null})); });
+  }
+  if(state.filt!=='all') out=out.filter(function(e){return e.obj===state.filt;});
+  return out;
+}
+
+/* ---------- gráficos ---------- */
+function niceTicks(lo,hi,n){
+  n=n||5; var span=hi-lo||1,raw=span/n,p=Math.pow(10,Math.floor(Math.log10(raw)));
+  var s=[1,2,2.5,5,10].map(function(x){return x*p;}).find(function(x){return x>=raw;});
+  var a=Math.floor(lo/s+1e-9)*s,b=Math.ceil(hi/s-1e-9)*s,t=[]; for(var v=a;v<=b+1e-6;v+=s) t.push(Math.round(v*1e6)/1e6); return {lo:a,hi:b,ticks:t};
+}
+function curve(plan,val,c,o){
+  o=o||{}; var W=o.W||760,H=o.H||300,ml=o.ml||54,mr=14,mt=24,mb=30,pw=W-ml-mr,ph=H-mt-mb;
+  var cp=[],cv=[],a=0,b=0;
+  for(var i=0;i<NM;i++){ a+=plan[i]; b+=val[i]; cp.push(a); cv.push(b); }
+  var T=niceTicks(0,Math.max(a,b)*1.03,o.n||4);
+  function X(i){ return ml+pw*i/(NM-1); } function Y(v){ return mt+ph-ph*v/T.hi; }
+  var s='';
+  T.ticks.forEach(function(t){ s+='<line class="ax" x1="'+ml+'" x2="'+(W-mr)+'" y1="'+Y(t)+'" y2="'+Y(t)+'"/><text class="axt" x="'+(ml-8)+'" y="'+(Y(t)+4)+'" text-anchor="end">'+(T.hi>=5000?Math.round(t/1000)+'k':Math.round(t))+'</text>'; });
+  for(var j=0;j<NM;j++) if((j%(o.step||3)===0&&Math.abs(j-c)>(o.step||3)/2+0.5)||j===c) s+='<text class="axt'+(j===c?' cut':'')+'" x="'+X(j)+'" y="'+(H-10)+'" text-anchor="middle">'+mLab(j)+'</text>';
+  s+='<line class="cutline" x1="'+X(c)+'" x2="'+X(c)+'" y1="'+mt+'" y2="'+(mt+ph)+'"/>';
+  function path(arr,i0,i1){ var d=''; for(var k=i0;k<=i1;k++) d+=(k===i0?'M':'L')+X(k).toFixed(1)+' '+Y(arr[k]).toFixed(1); return d; }
+  s+='<path class="l-plan" d="'+path(cp,0,NM-1)+'"/><path class="l-real" d="'+path(cv,0,LAST)+'"/><path class="l-proy" d="'+path(cv,LAST,NM-1)+'"/>';
+  s+='<circle cx="'+X(c)+'" cy="'+Y(cv[c])+'" r="5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>';
+  for(var k=0;k<NM;k++){
+    var tip='<b>'+mLong(k)+'</b> <i>(acumulado)</i><br>Plan: '+$(cp[k])+'<br>'+(k<=LAST?'Real: ':'Proyectado: ')+$(cv[k])+' ('+sg(cv[k]-cp[k])+')';
+    s+='<rect class="hit" data-html="'+esc(tip)+'" x="'+(X(k)-pw/(NM-1)/2)+'" y="'+mt+'" width="'+(pw/(NM-1))+'" height="'+ph+'"/>';
+  }
+  s+='<text class="axt" x="'+ml+'" y="12">'+(o.title||'Dólares acumulados')+'</text>';
+  return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Curva acumulada de plan, real y proyectado">'+s+'</svg>';
+}
+function triangle(alc,tim,cost,bA,bC){
+  var cx=210,cy=188,R=124;
+  var vs=[{n:'Avance programático',v:alc,a:-90,b:bA},{n:'Tiempo transcurrido',v:tim,a:150,b:{k:'info',t:'Referencia'}},{n:'Presupuesto gastado',v:cost,a:30,b:bC}];
+  function pt(a,r){ var t=a*Math.PI/180; return [cx+r*Math.cos(t),cy+r*Math.sin(t)]; }
+  function poly(f){ return vs.map(function(v){ var p=pt(v.a,R*f(v)); return p[0].toFixed(1)+','+p[1].toFixed(1); }).join(' '); }
+  var g='';
+  [.5,1].forEach(function(k){ g+='<polygon class="tri-grid" points="'+poly(function(){return k;})+'"/>'; });
+  vs.forEach(function(v){ var p=pt(v.a,R); g+='<line class="tri-axis" x1="'+cx+'" y1="'+cy+'" x2="'+p[0].toFixed(1)+'" y2="'+p[1].toFixed(1)+'"/>'; });
+  g+='<text class="ring-t" x="'+(cx+6)+'" y="'+(cy-R*.5+4)+'">50%</text><text class="ring-t" x="'+(cx+6)+'" y="'+(cy-R+14)+'">100%</text>';
+  var real=poly(function(v){return clamp(v.v==null?tim:v.v,.03,1.15);}),dots='',lab='',lp=[[210,16,42,58],[78,296,322,338],[342,296,322,338]];
+  vs.forEach(function(v,i){
+    var p=pt(v.a,R*clamp(v.v==null?tim:v.v,.03,1.15)),l=lp[i];
+    dots+='<circle class="dot '+v.b.k+'" cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="7.5"/>';
+    lab+='<text class="tl-n" x="'+l[0]+'" y="'+l[1]+'" text-anchor="middle">'+v.n+'</text><text class="tl-v '+v.b.k+'" x="'+l[0]+'" y="'+l[2]+'" text-anchor="middle">'+(v.v==null?'—':P(v.v*100))+'</text><text class="tl-s" x="'+l[0]+'" y="'+l[3]+'" text-anchor="middle">'+v.b.t+'</text>';
+  });
+  return '<svg viewBox="0 0 420 350" role="img" aria-label="Triángulo de la gestión">'+g+'<polygon class="tri-ideal" points="'+poly(function(){return tim;})+'"/><polygon class="tri-real" points="'+real+'"/>'+dots+lab+'</svg>';
+}
+
+/* ---------- Panorama ---------- */
+function vPanorama(){
+  var c=state.cut,G=calc(c),t=G.all,tim=(c+1)/NM,cost=t.real/D.total;
+  var atLast=c===LAST,alc=atLast?G.alcance:null;
+  var bA=bandAlc(alc==null?null:alc/((LAST+1)/NM)),bC=bandCost(cost/tim);
+  var h='<div class="row two"><section class="card"><h2>Triángulo de la gestión</h2><p class="cap">Qué parte del avance programático se ha logrado, del tiempo y del presupuesto se ha consumido. La línea punteada es el ritmo esperado: avanzar y gastar lo mismo que el tiempo.</p><div class="tri-wrap">'+triangle(alc,tim,cost,bA,bC)+'</div>'+(atLast?'':'<p class="cap">Los indicadores solo tienen reporte a ago 2026. Con un corte anterior solo se puede comparar el tiempo y el presupuesto.</p>')+'</section>';
+  h+='<section class="card"><h2>Lectura rápida</h2><ul class="attn">'+
+   '<li>'+chip(bA.k,'Avance')+'<div><div class="t">'+(alc==null?'Disponible desde ago 2026':P(alc*100)+' de avance programático')+'</div><div class="r">Promedio de los <b>'+G.nInd+' indicadores</b>. Los '+G.nZero+' sin reporte cuentan 0% y los sobrecumplidos cuentan 100%.</div></div></li>'+
+   '<li>'+chip('info','Tiempo')+'<div><div class="t">'+(c+1)+' de '+NM+' meses ('+P(tim*100)+')</div><div class="r">Cierre de '+mLong(c)+'. Quedan '+(NM-c-1)+' meses.</div></div></li>'+
+   '<li>'+chip(bC.k,'Costo')+'<div><div class="t">'+$(t.real)+' gastados ('+P(cost*100)+' del presupuesto)</div><div class="r">El plan indicaba '+$(t.plan)+' ('+P(t.plan/t.bud*100)+') a esta fecha: '+sg(t.real-t.plan)+'.</div></div></li></ul>'+
+   (G.flagged.length?'<div class="how"><b>'+G.flagged.length+' indicadores superan el doble de su meta</b> ('+G.flagged.join(', ')+') y conviene verificarlos. Hoy cuentan así en el avance:<div class="tools" style="margin:8px 0 0"><button class="pill'+(state.verif==='cap'?' on':'')+'" data-act="verif" data-v="cap">Cuentan 100%</button><button class="pill'+(state.verif==='zero'?' on':'')+'" data-act="verif" data-v="zero">Cuentan 0% hasta verificarlos</button></div></div>':'')+
+   '<div class="how" style="margin-top:10px"><b>Siguiente paso:</b> abre <b>Explorador</b> para comparar resultados entre sí.</div></section></div>';
+  h+='<div class="kpis"><div class="kpi"><span>Presupuesto total</span><b>'+$(t.bud)+'</b></div><div class="kpi"><span>Plan de gasto al corte</span><b>'+$(t.plan)+'</b><small>'+P(t.plan/t.bud*100)+' del total</small></div><div class="kpi"><span>Gastado real</span><b>'+$(t.real)+'</b><small>'+P(t.real/t.bud*100)+' del total</small></div><div class="kpi"><span>Cierre proyectado</span><b>'+$(t.cierre)+'</b><small>Real más proyectado</small></div><div class="kpi"><span>Saldo al cierre</span><b>'+$(t.saldo)+'</b><small>Presupuesto menos cierre</small></div></div>';
+  var P0=Array(NM).fill(0),V0=Array(NM).fill(0);
+  D.lines.forEach(function(l){ for(var i=0;i<NM;i++){ P0[i]+=planAt(l,i); V0[i]+=l.m[i]; } });
+  ['personal','beneficios','indirectos'].forEach(function(k){ for(var i=0;i<NM;i++){ P0[i]+=D.cats[k].y[Math.floor(i/12)]/12; V0[i]+=D.cats[k].m[i]; } });
+  h+='<section class="card"><h2>Gasto acumulado del proyecto</h2><p class="legend"><span><i class="sw plan"></i>Plan</span><span><i class="sw real"></i>Real</span><span><i class="sw proy"></i>Proyectado desde sep 2026</span></p>'+curve(P0,V0,c,{title:'Miles de dólares, todo el proyecto'})+'</section>';
+  var rows=[['Actividades de resultados',G.gRes],['Apoyo y operación',G.gAp],['Personal',G.cats.personal],['Beneficios',G.cats.beneficios],['Costos indirectos (18%)',G.cats.indirectos]],mx=Math.max.apply(null,rows.map(function(r){return r[1].bud;}));
+  h+='<section class="card"><h2>Dónde está el presupuesto</h2><p class="cap">La barra gris es el presupuesto, el relleno es lo gastado y la marca oscura es lo que debía llevarse según el plan. Personal, beneficios e indirectos solo aparecen aquí.</p>'+
+   rows.map(function(r){ var a=r[1],w=a.bud/mx*100; return '<div class="budrow"><b>'+r[0]+'</b><div style="width:'+w+'%;min-width:40px"><div class="trk"><div class="fill" style="width:'+clamp(a.pe,0,100)+'%"></div><div class="plan" style="left:'+clamp(a.plan/a.bud*100,0,100)+'%" data-html="'+esc('Plan al corte: '+$(a.plan))+'"></div></div></div><div class="val">'+$(a.real)+' de '+$(a.bud)+'<small>'+P(a.pe)+' gastado · cierre '+$(a.cierre)+'</small></div></div>'; }).join('')+'</section>';
+  h+='<section class="card"><h2>Para revisar</h2>'+attention(G)+'</section>';
+  return h;
+}
+function attention(G){
+  var it=[],all=G.results.reduce(function(a,r){return a.concat(r.lines);},[]).concat(G.apoyo);
+  all.filter(function(x){return x.bud>0&&x.real>x.bud*1.1;}).sort(function(a,b){return (b.real-b.bud)-(a.real-a.bud);}).slice(0,3).forEach(function(x){ it.push(['bad','Línea '+x.l.id+' gastó más de lo presupuestado',trunc(x.l.name,90)+': '+$(x.real)+' contra '+$(x.bud)+' ('+P(x.pe)+').']); });
+  G.results.filter(function(r){return r.sig.k==='bad';}).forEach(function(r){ it.push(['bad','Resultado '+r.r.code+': gasta más de lo que avanza','Lleva '+P(r.a.pe)+' del presupuesto gastado y '+P(r.avg)+' de avance.']); });
+  var idle=all.filter(function(x){return x.bud>0&&x.cierre===0;});
+  if(idle.length) it.push(['warn',idle.length+' líneas con presupuesto y sin gasto ni proyección',idle.map(function(x){return x.l.id;}).join(', ')+': '+$(idle.reduce(function(s,x){return s+x.bud;},0))+'.']);
+  if(G.gAp.saldo<0) it.push(['warn','Apoyo y operación cerraría sobre su presupuesto','Cierre proyectado '+$(G.gAp.cierre)+' contra '+$(G.gAp.bud)+' presupuestados.']);
+  if(G.flagged.length) it.push(['warn','Indicadores sobrecumplidos a verificar',G.flagged.join(', ')+' superan el doble de su meta.']);
+  it.push(['na',G.nZero+' indicadores sin reporte','Cuentan 0% en el avance programático hasta que tengan dato.']);
+  return '<ul class="attn">'+it.slice(0,8).map(function(x){return '<li>'+chip(x[0],x[0]==='bad'?'Urgente':(x[0]==='na'?'Pendiente':'Revisar'))+'<div><div class="t">'+x[1]+'</div><div class="r">'+x[2]+'</div></div></li>';}).join('')+'</ul>';
+}
+
+/* ---------- Explorador ---------- */
+var prevPos={},lastEnts={};
+var AV=['avance','rend','cpp','brecha'];
+function usesAvance(){ return AV.indexOf(state.x)>=0||AV.indexOf(state.y)>=0||AV.indexOf(state.size)>=0||state.color==='estado'; }
+function locked(){ return state.tab==='explorador'&&usesAvance(); }
+function cutEff(){ return locked()?LAST:state.cut; }
+function quant(arr,q){ var s=arr.slice().sort(function(a,b){return a-b;}); return s[Math.min(s.length-1,Math.floor(q*(s.length-1)))]; }
+function domain(vals,ref){
+  var mx=Math.max.apply(null,vals),mn=Math.min.apply(null,vals),hi=mx;
+  if(state.clip&&vals.length>4){ var cap=Math.max(quant(vals,.85)*1.5,quant(vals,.5)*2.5); if(mx>cap*1.15) hi=cap; }
+  if(ref!=null) hi=Math.max(hi,ref*1.15);
+  var lo=mn<0?mn*1.1:0, T=niceTicks(lo,hi*1.06,5); return {lo:T.lo,hi:T.hi,ticks:T.ticks,clipped:hi<mx};
+}
+function sizeVal(e){ if(state.size==='uni') return 1; return Math.abs(e[state.size]||0); }
+function clipPoly(x0,y0,x1,y1,f,sign){
+  var pts=[[x0,y0],[x1,y0],[x1,y1],[x0,y1]],out=[];
+  for(var i=0;i<4;i++){ var a=pts[i],b=pts[(i+1)%4],fa=f(a)*sign,fb=f(b)*sign;
+    if(fa>=0) out.push(a);
+    if((fa>=0)!==(fb>=0)){ var t=fa/(fa-fb); out.push([a[0]+t*(b[0]-a[0]),a[1]+t*(b[1]-a[1])]); } }
+  return out;
+}
+function scatter(ents){
+  var W=760,H=480,ml=70,mr=26,mt=22,mb=62,pw=W-ml-mr,ph=H-mt-mb;
+  var ok=ents.filter(function(e){return e[state.x]!=null&&e[state.y]!=null&&isFinite(e[state.x])&&isFinite(e[state.y]);});
+  var missing=ents.length-ok.length;
+  if(!ok.length) return {svg:'<div class="empty">No hay datos para esta combinación. Prueba con otra variable o quita el filtro de objetivo.</div>',ok:ok,missing:missing};
+  var mX=METRICS[state.x],mY=METRICS[state.y],pr=PRESETS[state.preset]||{};
+  var dx=domain(ok.map(function(e){return e[state.x];}),mX.ref),dy=domain(ok.map(function(e){return e[state.y];}),mY.ref);
+  function X(v){ return ml+pw*(clamp(v,dx.lo,dx.hi)-dx.lo)/(dx.hi-dx.lo); }
+  function Y(v){ return mt+ph-ph*(clamp(v,dy.lo,dy.hi)-dy.lo)/(dy.hi-dy.lo); }
+  var s='',sameU=mX.u===mY.u&&(mX.u==='$'||mX.u==='%'),dA=Math.max(dx.lo,dy.lo),dB=Math.min(dx.hi,dy.hi),hasDiag=sameU&&dB>dA;
+  if(hasDiag&&pr.zones){
+    var p=[X(dA),Y(dA)],q=[X(dB),Y(dB)],f=function(pt){return (q[0]-p[0])*(pt[1]-p[1])-(q[1]-p[1])*(pt[0]-p[0]);},sA=Math.sign(f([ml,mt]))||1;
+    [['above',sA],['below',-sA]].forEach(function(z){ var pts=clipPoly(ml,mt,ml+pw,mt+ph,f,z[1]); if(pts.length>2) s+='<polygon points="'+pts.map(function(a){return a[0].toFixed(1)+','+a[1].toFixed(1);}).join(' ')+'" fill="var(--'+pr.zones[z[0]].k+'-bg)" opacity=".75"/>'; });
+  }
+  dx.ticks.forEach(function(t){ s+='<line class="ax" x1="'+X(t)+'" x2="'+X(t)+'" y1="'+mt+'" y2="'+(mt+ph)+'"/><text class="axt" x="'+X(t)+'" y="'+(mt+ph+18)+'" text-anchor="middle">'+fax(state.x,t)+'</text>'; });
+  dy.ticks.forEach(function(t){ s+='<line class="ax" x1="'+ml+'" x2="'+(ml+pw)+'" y1="'+Y(t)+'" y2="'+Y(t)+'"/><text class="axt" x="'+(ml-9)+'" y="'+(Y(t)+4)+'" text-anchor="end">'+fax(state.y,t)+'</text>'; });
+  s+='<text class="axl" x="'+(ml+pw/2)+'" y="'+(H-12)+'" text-anchor="middle">'+mX.l+' →</text><text class="axl" transform="translate(16 '+(mt+ph/2)+') rotate(-90)" text-anchor="middle">'+mY.l+' →</text>';
+  if(mX.ref!=null&&mX.ref>=dx.lo&&mX.ref<=dx.hi) s+='<line class="refl" x1="'+X(mX.ref)+'" x2="'+X(mX.ref)+'" y1="'+mt+'" y2="'+(mt+ph)+'"/>';
+  if(mY.ref!=null&&mY.ref>=dy.lo&&mY.ref<=dy.hi) s+='<line class="refl" x1="'+ml+'" x2="'+(ml+pw)+'" y1="'+Y(mY.ref)+'" y2="'+Y(mY.ref)+'"/>';
+  if(hasDiag) s+='<line class="diag" x1="'+X(dA)+'" y1="'+Y(dA)+'" x2="'+X(dB)+'" y2="'+Y(dB)+'"/>';
+  if(pr.zones){
+    s+='<text class="zl" style="fill:var(--'+pr.zones.above.k+')" x="'+(ml+10)+'" y="'+(mt+18)+'">'+pr.zones.above.t+'</text>';
+    s+='<text class="zl" style="fill:var(--'+pr.zones.below.k+')" x="'+(ml+pw-10)+'" y="'+(mt+ph-12)+'" text-anchor="end">'+pr.zones.below.t+'</text>';
+  }
+  var smax=Math.max.apply(null,ok.map(sizeVal))||1,sorted=ok.slice().sort(function(a,b){return sizeVal(b)-sizeVal(a);});
+  sorted.forEach(function(e){
+    var r=state.size==='uni'?11:6+24*Math.sqrt(sizeVal(e)/smax),px=X(e[state.x]),py=Y(e[state.y]),cl=e[state.x]>dx.hi||e[state.y]>dy.hi;
+    var cls=state.color==='estado'?'c-'+e.sig.k:(state.color==='obj'?OBJ_COL[e.obj]:'o-0');
+    e._p={x:px,y:py,r:r};
+    s+='<circle class="bub '+cls+(state.sel===e.id?' sel':'')+'" data-id="'+esc(e.id)+'" tabindex="0" role="button" aria-label="'+esc(e.short+' '+e.name)+'" cx="0" cy="0" r="'+r.toFixed(1)+'" style="transform:translate('+px.toFixed(1)+'px,'+py.toFixed(1)+'px)"'+(cl?' stroke-dasharray="3 3"':'')+'/>';
+  });
+  sorted.forEach(function(e){ if(state.level==='res'||e._p.r>=15||state.sel===e.id) { var lf=e._p.x+e._p.r+4+String(e.short).length*7>W-4; s+='<text class="blab" x="'+(lf?e._p.x-e._p.r-4:e._p.x+e._p.r+4).toFixed(1)+'" y="'+(e._p.y+4).toFixed(1)+'"'+(lf?' text-anchor="end"':'')+'>'+esc(e.short)+'</text>'; } });
+  return {svg:'<svg id="scat" viewBox="0 0 '+W+' '+H+'" role="group" aria-label="Gráfico de burbujas">'+s+'</svg>',ok:ok,missing:missing,clipped:dx.clipped||dy.clipped};
+}
+function legendFor(){
+  if(state.color==='estado') return [['ok','Alineado'],['info','Avanza con poco gasto'],['warn','Revisar'],['bad','Gasta más de lo que avanza'],['na','Sin avance ni gasto']].map(function(x){return '<span><i class="sw dotc" style="background:var(--'+x[0]+')"></i>'+x[1]+'</span>';}).join('');
+  if(state.color==='obj') return [['oe1','OE 1'],['oe2','OE 2'],['oe3','OE 3'],['oeA','Apoyo']].map(function(x){return '<span><i class="sw dotc" style="background:var(--'+x[0]+')"></i>'+x[1]+'</span>';}).join('');
+  return '';
+}
+function opts(obj,cur){ return Object.keys(obj).map(function(k){var l=typeof obj[k]==='string'?obj[k]:obj[k].l;return '<option value="'+k+'"'+(cur===k?' selected':'')+'>'+l+'</option>';}).join(''); }
+function names(arr){ return arr.length?' ('+arr.slice(0,4).map(function(e){return e.short;}).join(', ')+(arr.length>4?'…':'')+')':''; }
+function conclusion(all){
+  var es=all.filter(function(e){return e.kind!=='apoyo'&&!(e.kind==='line'&&e.parent==null);}),u=state.level==='res'?'resultados':'actividades',k=state.preset;
+  function by(f){ return es.filter(f); }
+  if(k==='rinde'){ var b=by(function(e){return e.sig.k==='bad';}),g=by(function(e){return e.sig.k==='ok';}),i=by(function(e){return e.sig.k==='info';}),o=es.length-b.length-g.length-i.length;
+    return 'De <b>'+es.length+' '+u+'</b>: <b>'+b.length+'</b> gastan más de lo que avanzan'+names(b)+', <b>'+g.length+'</b> están alineados'+names(g)+', <b>'+i.length+'</b> avanzan con poco gasto'+names(i)+(o?' y <b>'+o+'</b> están en otra situación (sin avance ni gasto, o ya cumplidos con sobregasto)':'')+'.'; }
+  if(k==='ritmo'){ var ov=all.filter(function(e){return e.ritmo!=null&&e.ritmo>110;}),un=all.filter(function(e){return e.ritmo!=null&&e.ritmo<90;});
+    return 'Al corte de '+mLong(cutEff())+': <b>'+ov.length+'</b> gastan más que el plan'+names(ov)+' y <b>'+un.length+'</b> gastan menos'+names(un)+'. El resto va al día (±10%).'; }
+  if(k==='cierre'){ var o2=all.filter(function(e){return e.cp!=null&&e.cp>105;}),u2=all.filter(function(e){return e.cp!=null&&e.cp<95;});
+    return '<b>'+o2.length+'</b> cerrarían con sobregasto'+names(o2)+' y <b>'+u2.length+'</b> con saldo sin usar'+names(u2)+'.'; }
+  if(k==='costo'){ var c=es.filter(function(e){return e.cpp!=null;}).sort(function(a,b){return b.cpp-a.cpp;});
+    if(!c.length) return 'Ningún elemento tiene avance todavía.';
+    return 'El avance más caro: '+c.slice(0,3).map(function(e){return '<b>'+e.short+'</b> ('+$(e.cpp)+' por punto)';}).join(', ')+'. El más barato: <b>'+c[c.length-1].short+'</b> ('+$(c[c.length-1].cpp)+' por punto).'; }
+  return 'Mostrando <b>'+all.length+' '+u+'</b>. Pasa el cursor sobre una burbuja para ver sus cifras y haz clic para abrir su detalle.';
+}
+function detail(e){
+  if(!e) return '<div class="card" id="det"><h2>Detalle</h2><p class="cap">Haz clic en una burbuja o en una fila de la tabla para ver aquí su presupuesto, su gasto mes a mes, sus indicadores y sus actividades.</p></div>';
+  var h='<div class="card" id="det"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><span class="tag">'+esc(e.short)+'</span>'+chip(e.sig.k,e.sig.t)+'</div><button class="pill" data-act="desel">Cerrar</button></div><h3 style="margin-top:8px;font-family:var(--body);font-size:16px;font-weight:600;line-height:1.35">'+esc(e.name)+'</h3>';
+  h+='<div class="stats">'+[['Presupuesto',$(e.bud)],['Gastado al corte',$(e.real)+(e.pe==null?'':' ('+P(e.pe)+')')],['Plan al corte',$(e.plan)],['Cierre proyectado',$(e.cierre)],['Avance indicadores',e.avance==null?'no aplica':P(e.avance)],['Saldo al cierre',$(e.saldo)]].map(function(x){return '<div class="st"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>';}).join('')+'</div>';
+  h+='<p class="legend" style="margin:0"><span><i class="sw plan"></i>Plan</span><span><i class="sw real"></i>Real</span><span><i class="sw proy"></i>Proyectado</span></p>'+curve(e.mo.p,e.mo.v,cutEff(),{W:440,H:210,ml:44,n:3,step:6,title:'Dólares acumulados'});
+  if(e.kind==='res'&&e.ref){
+    h+='<div class="mini"><h4>Indicadores</h4>'+e.ref.inds.map(function(m){ var w=clamp(m.eff*100,0,100); return '<div class="mi"><span>'+esc(m.i.code.replace('Resultado ',''))+' · '+esc(trunc(m.i.text,70))+'</span><div class="bar '+m.s.k+'"><i style="width:'+w+'%"></i></div></div><div class="mi" style="border:0;padding:0 0 4px;color:var(--muted)"><span>Meta '+fv(m.i,m.i.meta)+' · alcanzado '+fv(m.i,m.i.alc)+'</span><b style="text-align:right">'+(m.has?P(m.av*100):'0%')+'</b></div>'; }).join('')+'</div>';
+    h+='<div class="mini"><h4>Actividades</h4>'+e.ref.lines.map(function(x){ return '<div class="mi"><span>'+x.l.id+' · '+esc(trunc(x.l.name,60))+'</span><div class="bar '+(x.pe>110?'bad':'acc')+'"><i style="width:'+clamp(x.pe,0,100)+'%"></i></div></div><div class="mi" style="border:0;padding:0 0 4px;color:var(--muted)"><span>'+$(x.real)+' de '+$(x.bud)+'</span><b style="text-align:right">'+(x.bud?P(x.pe):'—')+'</b></div>'; }).join('')+'</div>';
+  }
+  if(e.kind==='line'&&e.parent) h+='<p class="cap">Esta actividad pertenece al resultado '+e.parent+' y hereda su avance.</p>';
+  return h+'</div>';
+}
+var SIGORD={bad:0,warn:1,na:2,info:3,ok:4};
+function tableHTML(es){
+  var cols=[['name','Resultado','Código y nombre'],['bud','Presupuesto',METRICS.bud.d],['real','Gastado',METRICS.real.d],['pe','% gastado',METRICS.pe.d],['avance','Avance de indicadores',METRICS.avance.d],['rend','Rendimiento',METRICS.rend.d],['cierre','Cierre proyectado',METRICS.cierre.d],['saldo','Saldo',METRICS.saldo.d],['sig','Estado','Compara el avance con el gasto']];
+  var k=state.sortBy,dir=state.sortDir==='asc'?1:-1;
+  var sorted=es.slice().sort(function(a,b){ var x=k==='name'?a.short:(k==='sig'?SIGORD[a.sig.k]:a[k]),y=k==='name'?b.short:(k==='sig'?SIGORD[b.sig.k]:b[k]); if(x==null&&y==null) return 0; if(x==null) return 1; if(y==null) return -1; return (x>y?1:(x<y?-1:0))*dir; });
+  var h='<div class="scroller"><table class="tbl"><thead><tr>'+cols.map(function(c){ return '<th'+(c[0]==='name'?' class="t"':'')+' title="'+esc(c[2])+'" data-act="sort" data-v="'+c[0]+'"><button class="thb">'+c[1]+(k===c[0]?(dir>0?' ▲':' ▼'):'')+'</button></th>'; }).join('')+'</tr></thead><tbody>';
+  sorted.forEach(function(e){
+    h+='<tr class="clk'+(state.sel===e.id?' sel':'')+'" data-act="pick" data-id="'+esc(e.id)+'"><td class="t"><span class="tag">'+esc(e.short)+'</span>'+esc(trunc(e.name,64))+'</td><td class="n">'+$(e.bud)+'</td><td class="n">'+$(e.real)+'</td><td class="n'+(e.pe!=null&&e.pe>110?' neg':'')+'">'+(e.pe==null?'—':P(e.pe))+'</td><td class="n">'+(e.avance==null?'—':P(e.avance))+'</td><td class="n'+(e.rend!=null?(e.rend>=1?' pos':(e.rend<.7?' neg':'')):'')+'">'+(e.rend==null?'—':e.rend.toFixed(2)+'×')+'</td><td class="n">'+$(e.cierre)+'</td><td class="n'+(e.saldo<0?' neg':'')+'">'+$(e.saldo)+'</td><td>'+chip(e.sig.k,e.sig.t)+'</td></tr>';
+  });
+  return h+'</tbody></table></div>';
+}
+function vExplorador(){
+  var all=entities(cutEff()); lastEnts.all=all;
+  var sc=scatter(all); lastEnts.byId={}; all.forEach(function(e){lastEnts.byId[e.id]=e;});
+  var sel=state.sel?lastEnts.byId[state.sel]:null; if(state.sel&&!sel) state.sel=null;
+  var pr=state.preset,P0=PRESETS[pr],unit=state.level==='res'?'resultado':'actividad (línea presupuestaria)';
+  var h='<div class="presets">'+Object.keys(PRESETS).map(function(k){return '<button class="pill'+(pr===k?' on':'')+'" data-act="preset" data-v="'+k+'">'+PRESETS[k].t+'</button>';}).join('')+'</div>';
+  h+='<div class="row explore"><div><section class="card"><h2>'+P0.q+'</h2><p class="cap">'+P0.what+'</p><p class="cap"><b>Cada burbuja es un '+unit+'.</b> Su tamaño indica '+(state.size==='uni'?'nada (todas iguales)':SIZES[state.size].toLowerCase())+(state.color==='none'?'.':' y su color indica '+(state.color==='estado'?'si el avance justifica el gasto':'el objetivo al que pertenece')+'.')+'</p>'+
+    '<details class="cust"'+(pr==='libre'?' open':'')+'><summary>Cambiar variables y nivel</summary><div class="tools" style="margin-top:10px"><label>Eje horizontal<select data-ax="x">'+opts(METRICS,state.x)+'</select></label><label>Eje vertical<select data-ax="y">'+opts(METRICS,state.y)+'</select></label><label>Tamaño<select data-ax="size">'+opts(SIZES,state.size)+'</select></label><label>Color<select data-ax="color">'+opts(COLORS,state.color)+'</select></label><label>Qué se compara<select data-ax="level"><option value="res"'+(state.level==='res'?' selected':'')+'>Resultados</option><option value="act"'+(state.level==='act'?' selected':'')+'>Actividades (líneas)</option></select></label><button class="pill'+(state.clip?' on':'')+'" data-act="clip" title="Evita que un valor extremo aplaste al resto">Recortar extremos</button></div></details>'+
+    sc.svg+'<p class="legend">'+legendFor()+'</p><div class="how"><b>Cómo leerlo.</b> '+P0.how+'<br><b>Qué muestra hoy.</b> '+conclusion(all)+'</div>'+
+    (sc.missing?'<p class="cap">'+sc.missing+' de '+all.length+' elementos no aparecen porque no tienen valor para estas variables.</p>':'')+(sc.clipped?'<p class="cap">Los círculos con borde punteado están en el borde porque su valor se sale de la escala. Pasa el cursor para ver el real o quita “Recortar extremos”.</p>':'')+
+    '<details class="cust"'+(pr==='libre'?' open':'')+'><summary>Qué significa cada variable</summary><ul class="defs"><li><b>'+METRICS[state.x].l+'</b> (eje horizontal): '+METRICS[state.x].d+'</li><li><b>'+METRICS[state.y].l+'</b> (eje vertical): '+METRICS[state.y].d+'</li>'+(state.size!=='uni'?'<li><b>Tamaño, '+SIZES[state.size].toLowerCase()+':</b> '+(METRICS[state.size]?METRICS[state.size].d:'Valor absoluto del saldo.')+'</li>':'')+(state.color==='estado'?'<li><b>Color, estado:</b> compara el avance de indicadores con el % del presupuesto gastado. “Gasta más de lo que avanza” si el gasto supera al avance en más de 30 puntos; “avanza con poco gasto” si el avance supera al gasto en más de 30 puntos.</li>':'')+'</ul></details></section></div>'+
+    '<div id="detwrap">'+detail(sel)+'</div></div>';
+  h+='<section class="card"><h2>Tabla comparativa</h2><p class="cap">Son las mismas burbujas del gráfico, pero en números: una fila por '+unit+'. Haz clic en un encabezado para ordenar y pasa el cursor para ver qué significa cada columna. Haz clic en una fila para ver su detalle.</p>'+tableHTML(all)+'<div class="how"><b>Rendimiento</b> es el avance dividido entre el % del presupuesto gastado: <b>1.0×</b> avanza lo mismo que gasta, <b>más de 1.0×</b> rinde (verde), <b>menos de 1.0×</b> gasta más de lo que avanza (naranja si es menos de 0.7×).</div></section>';
+  return h;
+}
+function afterExplorer(){
+  var svg=document.getElementById('scat'); if(!svg) return;
+  var np={};
+  [].forEach.call(svg.querySelectorAll('.bub'),function(el){
+    var id=el.getAttribute('data-id'),m=/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(el.style.transform); if(!m) return;
+    np[id]=[m[1],m[2]];
+    var pv=prevPos[id];
+    if(pv&&(pv[0]!==m[1]||pv[1]!==m[2])&&!state.noAnim){
+      el.style.transition='none'; el.style.transform='translate('+pv[0]+'px,'+pv[1]+'px)'; void el.getBoundingClientRect();
+      el.style.transition='transform .55s cubic-bezier(.3,.7,.2,1)'; el.style.transform='translate('+m[1]+'px,'+m[2]+'px)';
+    }
+  });
+  prevPos=np;
+}
+
+
+function indTable(inds){
+  var useFY=inds.some(function(i){return (i.fy25||0)+(i.fy26||0)>0;});
+  var h='<div class="scroller"><table class="tbl"><thead><tr><th>Código</th><th class="t">Indicador</th><th>Meta</th><th>Alcanzado</th><th>Avance</th>'+(useFY?'<th>FY25</th><th>FY26</th>':'')+'<th>Estado</th></tr></thead><tbody>';
+  inds.forEach(function(i){
+    var m=indM(i),w=clamp(m.eff*100,0,100),e=(LAST+1)/NM*100,over=m.has&&m.av>1;
+    h+='<tr><td><span class="tag">'+i.code.replace('Resultado ','').replace('Objetivo General ','OG ').replace('Objetivo Específico ','OE ')+'</span></td><td class="t">'+esc(i.text)+'</td><td class="n">'+fv(i,i.meta)+'</td><td class="n">'+fv(i,i.alc)+'</td>'+
+    '<td style="min-width:160px"><div style="display:flex;align-items:center;gap:8px"><div class="bar '+m.s.k+'" style="flex:1" data-html="La marca oscura es el tiempo transcurrido ('+P(e)+')."><i style="width:'+w.toFixed(1)+'%"></i><b style="left:'+e.toFixed(1)+'%"></b></div><span class="n" style="min-width:52px;text-align:right">'+(m.has?P(m.av*100):'0%')+(over?'<small style="display:block;color:var(--muted);font-size:11px">cuenta '+P(m.eff*100)+'</small>':'')+'</span></div></td>'+
+    (useFY?'<td class="n">'+(i.fy25?fv(i,i.fy25):'—')+'</td><td class="n">'+(i.fy26?fv(i,i.fy26):'—')+'</td>':'')+'<td>'+chip(m.s.k,m.s.t)+'</td></tr>';
+  });
+  return h+'</tbody></table></div>';
+}
+function lineTable(ls){
+  if(!ls.length) return '<p class="cap">Este resultado no tiene líneas asociadas.</p>';
+  var a=aggM(ls);
+  return '<div class="scroller"><table class="tbl"><thead><tr><th>Línea</th><th class="t">Actividad</th><th>Presupuesto</th><th>Plan al corte</th><th>Real al corte</th><th>% gastado</th><th>Proyectado</th><th>Cierre proyectado</th><th>Saldo</th></tr></thead><tbody>'+
+  ls.map(function(x){return '<tr><td><span class="tag">'+x.l.id+'</span></td><td class="t">'+esc(x.l.name)+'</td><td class="n">'+$(x.bud)+'</td><td class="n">'+$(x.plan)+'</td><td class="n">'+$(x.real)+'</td><td class="n'+(x.pe>110?' neg':'')+'">'+(x.bud?P(x.pe):'sin presupuesto')+'</td><td class="n">'+$(x.proy)+'</td><td class="n">'+$(x.cierre)+'</td><td class="n'+(x.saldo<0?' neg':'')+'">'+$(x.saldo)+'</td></tr>';}).join('')+
+  '</tbody><tfoot><tr><td></td><td class="t">Total</td><td class="n">'+$(a.bud)+'</td><td class="n">'+$(a.plan)+'</td><td class="n">'+$(a.real)+'</td><td class="n">'+P(a.pe)+'</td><td class="n">'+$(a.proy)+'</td><td class="n">'+$(a.cierre)+'</td><td class="n">'+$(a.saldo)+'</td></tr></tfoot></table></div>';
+}
+function st(l,v){ return '<div class="st"><span>'+l+'</span><b>'+v+'</b></div>'; }
+function vResultados(){
+  var c=state.cut,G=calc(c),f=state.filt;
+  var h='<p class="cap" style="margin:0 0 14px">El presupuesto pertenece al resultado y sus indicadores lo comparten. Abre un resultado para ver sus indicadores y sus actividades. El avance es siempre el del último reporte (ago 2026): promedio de todos sus indicadores, con 0% para los que no reportan y máximo 100% por indicador.</p><div class="tools"><button class="pill" data-act="openall">Abrir todos</button><button class="pill" data-act="closeall">Cerrar todos</button></div>';
+  if(f==='all'&&OG.length) h+='<section class="card oe"><h2>Objetivo general</h2><p class="cap">'+esc(D.inds[0].objective_text)+'</p>'+indTable(OG)+'</section>';
+  OBJS.filter(function(o){return f==='all'||f===o;}).forEach(function(o){
+    var rs=G.results.filter(function(r){return r.r.obj===o;}),a=aggM(rs.map(function(r){return r.a;}));
+    h+='<section class="oe"><div class="oe-h"><div><h2>'+o+'</h2><p>'+esc(OBJ[o].text)+'</p></div><div class="oe-n">'+st('Avance',P(objAvance(o)))+st('Presupuesto',$(a.bud))+st('Gastado',$(a.real))+st('% gastado',P(a.pe))+st('Cierre proyectado',$(a.cierre))+'</div></div>';
+    if(OBJ[o].inds.length) h+='<div class="card" style="margin-bottom:10px"><h3 style="margin-bottom:8px">Indicadores del objetivo</h3>'+indTable(OBJ[o].inds)+'</div>';
+    rs.forEach(function(r){
+      h+='<details class="res" data-code="'+r.r.code+'"'+(state.open[r.r.code]?' open':'')+'><summary><div class="r-name"><span class="tag">'+r.r.code+'</span>'+esc(r.r.text)+'</div><div class="oe-n">'+st('Presupuesto',$(r.a.bud))+st('Gastado',$(r.a.real)+' · '+(r.a.bud?P(r.a.pe):'—'))+st('Avance',P(r.avg))+st('Cierre proyectado',$(r.a.cierre))+'</div><div>'+chip(r.sig.k,r.sig.t)+'</div></summary><div class="res-b"><h4>Indicadores</h4>'+indTable(r.r.inds)+'<h4>Actividades y presupuesto</h4>'+lineTable(r.lines)+'</div></details>';
+    });
+    h+='</section>';
+  });
+  if(f==='all'||f==='Apoyo'){ var aa=aggM(G.apoyo); h+='<section class="oe"><div class="oe-h"><div><h2>Apoyo y operación</h2><p>Líneas sin resultado propio: viáticos, oficinas y vehículos, línea base y evaluación, y CARM.</p></div><div class="oe-n">'+st('Presupuesto',$(aa.bud))+st('Gastado',$(aa.real))+st('% gastado',P(aa.pe))+st('Cierre proyectado',$(aa.cierre))+'</div></div><div class="card">'+lineTable(G.apoyo)+'</div></section>'; }
+  var selr=function(l){ var cur=resOf(l); return '<select data-map="'+l.id+'" aria-label="Resultado de la línea '+l.id+'"><option value="apoyo"'+(cur==='apoyo'?' selected':'')+'>Apoyo y operación</option>'+RES.map(function(r){return '<option value="'+r.code+'"'+(cur===r.code?' selected':'')+'>'+r.code+'</option>';}).join('')+'</select>'; };
+  h+='<section class="card" style="margin-top:26px"><h2>Ajustar la asociación de líneas</h2><p class="cap">Si una línea presupuestaria pertenece a otro resultado, cámbiala aquí. Todo el tablero se recalcula y el cambio queda guardado en este navegador.</p><div class="scroller"><table class="tbl"><thead><tr><th>Línea</th><th class="t">Actividad</th><th>Presupuesto</th><th>Resultado</th></tr></thead><tbody>'+D.lines.map(function(l){return '<tr><td><span class="tag">'+l.id+'</span></td><td class="t">'+esc(l.name)+'</td><td class="n">'+$(tot(l.y))+'</td><td>'+selr(l)+'</td></tr>';}).join('')+'</tbody></table></div><div class="tools" style="margin:14px 0 0"><button class="pill" data-act="reset">'+(state.armReset?'Confirmar: restablecer asociaciones':'Restablecer asociaciones')+'</button></div></section>';
+  return h;
+}
+
+/* ---------- Mes a mes (mapa de calor) ---------- */
+function vMensual(){
+  var c=state.cut,v=state.mview,f=state.filt;
+  var rows=[];
+  var groups=[];
+  RES.forEach(function(r){ if(f==='all'||f===r.obj){ var ls=D.lines.filter(function(l){return resOf(l)===r.code;}); if(ls.length) groups.push({code:r.code,name:r.text,lines:ls}); } });
+  if(f==='all'||f==='Apoyo'){ var ap=D.lines.filter(function(l){return resOf(l)==='apoyo';}); if(ap.length) groups.push({code:'Apoyo',name:'Apoyo y operación',lines:ap}); }
+  function val(arrP,arrV,i){ return v==='plan'?arrP[i]:(v==='real'?arrV[i]:arrV[i]-arrP[i]); }
+  var body=[],mx=0;
+  groups.forEach(function(g){
+    var mo=monthlyOf(g.lines),r={code:g.code,name:g.name,vals:[]};
+    for(var i=0;i<NM;i++) r.vals.push(val(mo.p,mo.v,i));
+    rows.push(r);
+    if(state.mlevel==='act') g.lines.forEach(function(l){ var m2=monthlyOf([l]),rr={code:l.id,name:l.name,sub:true,vals:[]}; for(var i=0;i<NM;i++) rr.vals.push(val(m2.p,m2.v,i)); rows.push(rr); });
+  });
+  rows.forEach(function(r){ if(!r.sub||state.mlevel==='act') r.vals.forEach(function(x){ mx=Math.max(mx,Math.abs(x)); }); });
+  var h='<div class="tools"><div class="presets" style="margin:0">'+[['plan','Plan'],['real','Real y proyectado'],['diff','Diferencia']].map(function(o){return '<button class="pill'+(v===o[0]?' on':'')+'" data-act="mview" data-v="'+o[0]+'">'+o[1]+'</button>';}).join('')+'</div><div class="presets" style="margin:0">'+[['res','Por resultado'],['act','Con actividades']].map(function(o){return '<button class="pill'+(state.mlevel===o[0]?' on':'')+'" data-act="mlevel" data-v="'+o[0]+'">'+o[1]+'</button>';}).join('')+'</div></div><p class="cap" style="margin:0 0 12px">'+(v==='plan'?'Presupuesto anual repartido en partes iguales por mes: el archivo no trae un plan mensual.':(v==='real'?'Real hasta ago 2026 y proyectado desde sep 2026. Entre más intenso el color, mayor el monto. Los meses posteriores al corte están atenuados.':'Real o proyectado menos plan. En naranja se gasta más de lo planificado; en verde azulado, menos.'))+'</p>';
+  var head='<tr><th class="t sticky" style="z-index:3;background:var(--surface)">Resultado</th>';
+  for(var i=0;i<NM;i++) head+='<th class="'+(i===c?'cutc':'')+'">'+mLab(i)+'<small>'+(i<=LAST?'Real':'Proy.')+'</small></th>'; head+='<th>Total</th></tr>';
+  var tb='',colT=Array(NM).fill(0);
+  rows.forEach(function(r){
+    tb+='<tr'+(r.sub?'':' class="grp"')+'><td class="t sticky">'+(r.sub?'<span style="margin-left:14px"></span>':'')+'<span class="tag">'+r.code+'</span>'+esc(trunc(r.name,r.sub?44:50))+'</td>';
+    var t=0;
+    r.vals.forEach(function(x,i){ t+=x; if(!r.sub) colT[i]+=x;
+      var a=mx?Math.min(1,Math.abs(x)/mx):0,bg='';
+      if(Math.round(x)!==0) bg=' style="background:color-mix(in srgb,'+(v==='diff'&&x>0?'var(--bad)':'var(--accent)')+' '+Math.round(8+a*62)+'%,transparent)"';
+      tb+='<td class="n'+(i>c?' post':'')+'"'+bg+' data-html="'+esc('<b>'+r.code+'</b> · '+mLong(i)+'<br>'+(v==='diff'?sg(x):$(x)))+'">'+(Math.round(x)===0?'<span style="color:var(--faint)">·</span>':(v==='diff'?sg(x).replace('$',''):Math.round(x).toLocaleString('en-US')))+'</td>';
+    });
+    tb+='<td class="n"><b>'+(v==='diff'?sg(t):$(t))+'</b></td></tr>';
+  });
+  var extra='';
+  if(f==='all'){ [['personal','Personal'],['beneficios','Beneficios'],['indirectos','Costos indirectos']].forEach(function(k){ var cc=D.cats[k[0]],t=0; extra+='<tr><td class="t sticky" style="color:var(--muted)">'+k[1]+' <small>(solo ejecución total)</small></td>'; for(var i=0;i<NM;i++){ var pl=cc.y[Math.floor(i/12)]/12,x=v==='plan'?pl:(v==='real'?cc.m[i]:cc.m[i]-pl); colT[i]+=x; t+=x; extra+='<td class="n'+(i>c?' post':'')+'" style="color:var(--muted)">'+(v==='diff'?sg(x).replace('$',''):Math.round(x).toLocaleString('en-US'))+'</td>'; } extra+='<td class="n" style="color:var(--muted)">'+(v==='diff'?sg(t):$(t))+'</td></tr>'; }); }
+  var foot='<tr><td class="t sticky">'+(f==='all'?'Total del proyecto':'Total del filtro')+'</td>',cum='<tr><td class="t sticky">Acumulado</td>',ca=0;
+  for(var k=0;k<NM;k++){ ca+=colT[k]; foot+='<td class="n'+(k>c?' post':'')+'">'+(v==='diff'?sg(colT[k]).replace('$',''):Math.round(colT[k]).toLocaleString('en-US'))+'</td>'; cum+='<td class="n'+(k>c?' post':'')+'">'+(v==='diff'?sg(ca).replace('$',''):Math.round(ca).toLocaleString('en-US'))+'</td>'; }
+  foot+='<td class="n">'+(v==='diff'?sg(tot(colT)):$(tot(colT)))+'</td></tr>'; cum+='<td class="n"></td></tr>';
+  return h+'<section class="card" style="padding:12px"><div class="scroller"><table class="tbl heat" style="min-width:1750px"><thead>'+head+'</thead><tbody>'+tb+extra+'</tbody><tfoot>'+foot+cum+'</tfoot></table></div></section>';
+}
+
+/* ---------- Armazón y eventos ---------- */
+var TABS=[['panorama','Panorama'],['explorador','Explorador'],['resultados','Resultados e indicadores'],['mensual','Mes a mes']];
+var FILTS=[['all','Todo'],['OE 1','OE 1'],['OE 2','OE 2'],['OE 3','OE 3'],['Apoyo','Apoyo']];
+var views={panorama:vPanorama,explorador:vExplorador,resultados:vResultados,mensual:vMensual};
+var app=document.getElementById('app');
+app.innerHTML='<header class="top"><div><h1>Kaw Ixqa’al Fase IV</h1><p class="sub">Gestión del proyecto: alcance, tiempo y costo. Presupuesto de $1,000,000 de nov 2024 a oct 2027.</p></div><button class="themebtn" id="theme" aria-label="Cambiar tema claro u oscuro"></button></header>'+
+'<div class="ctrl"><div class="ctrl-row"><div class="cut"><label for="slider">Corte al cierre de</label><input id="slider" type="range" min="0" max="'+LAST+'" value="'+LAST+'"><output id="cutlab" for="slider"></output><button class="pill" id="play">▶ Reproducir</button><button class="pill" id="now">Último dato</button></div><div class="chips" id="chips"></div></div><div class="lock" id="lock" hidden></div></div>'+
+'<div class="tabs" id="tabs" role="tablist"></div><main id="view"></main>'+
+'<footer class="foot"><p>Fuentes: presupuesto GT-34128 al 31 ago 2026 (real hasta ago 2026, proyectado hasta oct 2027) e indicadores de la lista IPTT KI IV (SharePoint). Cifras en dólares.</p><details><summary>Cómo se calcula</summary><ul><li><b>Plan mensual:</b> el archivo solo trae el presupuesto por año del proyecto (nov a oct); se reparte en partes iguales por mes.</li><li><b>Avance programático:</b> promedio de <b>todos</b> los indicadores (33). Cada uno es alcanzado entre meta. Los que no han reportado cuentan 0%. Los sobrecumplidos se muestran con su valor real pero cuentan máximo 100%, para no inflar el promedio. Es el del último reporte (ago 2026): los indicadores no tienen historia mensual, por eso los cruces con avance están fijos en ese corte.</li><li><b>Indicadores a verificar:</b> los que superan el doble de su meta. En el Panorama se puede elegir que cuenten 100% o 0% hasta confirmarlos.</li><li><b>Rendimiento:</b> avance entre porcentaje del presupuesto gastado. 1.0× avanza lo mismo que gasta; más de 1.0× rinde.</li><li><b>Costo por punto de avance:</b> gastado entre puntos porcentuales de avance.</li><li><b>Estado:</b> compara avance y gasto. “Gasta más de lo que avanza” si el gasto supera al avance en más de 30 puntos.</li><li><b>Actividades:</b> heredan el avance del resultado al que pertenecen. El presupuesto no está dividido por indicador.</li><li><b>Cierre proyectado:</b> real hasta ago 2026 más lo proyectado de sep 2026 a oct 2027.</li></ul></details></footer>';
+var view=document.getElementById('view');
+function ctrl(){
+  var lk=locked(),ce=cutEff(),sl=document.getElementById('slider');
+  sl.value=ce; sl.disabled=lk;
+  document.getElementById('cutlab').textContent=mLong(ce)+(lk?' (fijo)':'');
+  document.getElementById('chips').innerHTML='<span class="lab">Filtrar</span>'+FILTS.map(function(f){return '<button class="pill'+(state.filt===f[0]?' on':'')+'" data-act="filt" data-v="'+f[0]+'">'+f[1]+'</button>';}).join('');
+  document.getElementById('tabs').innerHTML=TABS.map(function(t){return '<button class="tab" role="tab" data-act="tab" data-v="'+t[0]+'" aria-selected="'+(state.tab===t[0])+'">'+t[1]+'</button>';}).join('');
+  document.getElementById('theme').textContent=save.theme==='light'?'Tema oscuro':'Tema claro';
+  var pb=document.getElementById('play'); pb.disabled=lk; pb.textContent=state.playing?'❚❚ Pausar':'▶ Reproducir'; pb.classList.toggle('on',state.playing);
+  var lo=document.getElementById('lock'); lo.hidden=!lk;
+  if(lk) lo.innerHTML='<b>Corte fijo en agosto 2026.</b> Los indicadores solo tienen un reporte, así que el avance no se puede ver en meses anteriores. Para recorrer los meses usa “¿Vamos gastando lo planificado?” o “¿Alcanzará el presupuesto?”.';
+  if(lk&&state.playing) stopPlay();
+}
+function renderView(){
+  ctrl();
+  var sc=[].map.call(view.querySelectorAll('.scroller'),function(e){return e.scrollLeft;}),y=window.scrollY;
+  view.innerHTML=views[state.tab]();
+  [].forEach.call(view.querySelectorAll('.scroller'),function(e,i){e.scrollLeft=sc[i]||0;});
+  if(state.tab==='explorador') afterExplorer(); else prevPos={};
+  window.scrollTo(0,y);
+}
+function renderAll(){ renderView(); }
+var timer=null;
+function stopPlay(){ state.playing=false; clearInterval(timer); timer=null; }
+document.getElementById('slider').addEventListener('input',function(e){ if(locked()) return; state.cut=+e.target.value; document.getElementById('cutlab').textContent=mLong(state.cut); renderView(); });
+document.getElementById('play').addEventListener('click',function(){
+  if(locked()) return;
+  if(state.playing){ stopPlay(); ctrl(); return; }
+  state.playing=true; if(state.cut>=LAST) state.cut=0; ctrl(); renderView();
+  timer=setInterval(function(){ if(state.cut>=LAST){ stopPlay(); ctrl(); return; } state.cut++; ctrl(); renderView(); },650);
+});
+document.getElementById('now').addEventListener('click',function(){ stopPlay(); state.cut=LAST; ctrl(); renderView(); });
+document.getElementById('theme').addEventListener('click',function(){ save.theme=save.theme==='light'?'dark':'light'; document.documentElement.setAttribute('data-theme',save.theme); persist(); ctrl(); });
+function applyPreset(k){ state.preset=k; var p=PRESETS[k]; if(k!=='libre'){ state.x=p.x;state.y=p.y;state.size=p.size;state.color=p.color; } }
+document.addEventListener('click',function(e){
+  var bub=e.target.closest&&e.target.closest('.bub'); if(bub){ state.sel=bub.getAttribute('data-id'); state.noAnim=true; renderView(); state.noAnim=false; return; }
+  var b=e.target.closest&&e.target.closest('[data-act]'); if(!b) return;
+  var a=b.dataset.act;
+  if(a==='tab'){ state.tab=b.dataset.v; state.armReset=false; ctrl(); }
+  else if(a==='filt'){ state.filt=b.dataset.v; ctrl(); }
+  else if(a==='preset') applyPreset(b.dataset.v);
+  else if(a==='clip') state.clip=!state.clip;
+  else if(a==='pick'){ state.sel=b.dataset.id; state.noAnim=true; }
+  else if(a==='desel'){ state.sel=null; state.noAnim=true; }
+  else if(a==='sort'){ var kk=b.dataset.v; if(state.sortBy===kk) state.sortDir=state.sortDir==='asc'?'desc':'asc'; else { state.sortBy=kk; state.sortDir=kk==='name'?'asc':'desc'; } }
+  else if(a==='verif'){ state.verif=b.dataset.v; }
+  else if(a==='mview') state.mview=b.dataset.v;
+  else if(a==='mlevel') state.mlevel=b.dataset.v;
+  else if(a==='openall') RES.forEach(function(r){state.open[r.code]=true;});
+  else if(a==='closeall') state.open={};
+  else if(a==='reset'){ if(!state.armReset){ state.armReset=true; renderView(); return; } save.map={}; persist(); state.armReset=false; }
+  renderView(); state.noAnim=false;
+});
+document.addEventListener('keydown',function(e){ if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('bub')){ e.preventDefault(); state.sel=e.target.getAttribute('data-id'); state.noAnim=true; renderView(); state.noAnim=false; } });
+document.addEventListener('change',function(e){
+  var t=e.target;
+  if(t.dataset.ax){ var k=t.dataset.ax;
+    if(k==='level'){ state.level=t.value; state.sel=null; prevPos={}; }
+    else if(k==='rank') state.rank=t.value;
+    else { state[k]=t.value; state.preset='libre'; }
+  } else if(t.dataset.map){ var l=D.lines.filter(function(x){return x.id===t.dataset.map;})[0],def=l.res||'apoyo'; if(t.value===def) delete save.map[l.id]; else save.map[l.id]=t.value; persist(); }
+  else return;
+  renderView();
+});
+document.addEventListener('toggle',function(e){ var d=e.target; if(d&&d.classList&&d.classList.contains('res')) state.open[d.dataset.code]=d.open; },true);
+var tip=document.createElement('div'); tip.className='tip'; tip.hidden=true; document.body.appendChild(tip);
+document.addEventListener('pointermove',function(e){
+  var t=e.target.closest?e.target.closest('[data-html],.bub'):null;
+  if(!t){ tip.hidden=true; return; }
+  var html;
+  if(t.classList.contains('bub')){
+    var en=lastEnts.byId&&lastEnts.byId[t.getAttribute('data-id')]; if(!en){ tip.hidden=true; return; }
+    html='<b>'+esc(en.short)+' · '+esc(trunc(en.name,80))+'</b><br><i>'+en.obj+'</i><br>'+esc(METRICS[state.x].l)+': <b>'+fm(state.x,en[state.x])+'</b><br>'+esc(METRICS[state.y].l)+': <b>'+fm(state.y,en[state.y])+'</b><br>Presupuesto '+$(en.bud)+' · gastado '+$(en.real)+''+((state.y==='avance'||state.x==='avance')?'':'<br>'+(en.avance==null?'Avance: sin dato':'Avance de indicadores: '+P(en.avance)));
+  } else html=t.getAttribute('data-html');
+  tip.innerHTML=html; tip.hidden=false;
+  var w=tip.offsetWidth,hh=tip.offsetHeight;
+  tip.style.left=Math.max(8,Math.min(window.innerWidth-w-8,e.clientX+14))+'px';
+  tip.style.top=Math.max(8,Math.min(window.innerHeight-hh-8,e.clientY+16))+'px';
+});
+document.addEventListener('pointerleave',function(){ tip.hidden=true; });
+renderAll();
+})();
+</script>
+</body>
+</html>
